@@ -13,8 +13,7 @@ We should be able to use these as if they were regular functions. Java8 finally 
 
 Put the following files (or the latest versions) to classpath and enable annotation processing in your build tool:
 
-https://github.com/solita/functional-utils/releases/download/0.8/functional-utils-0.8.jar
-
+https://github.com/solita/functional-utils/releases/download/0.8/functional-utils-0.8.jar  
 https://github.com/solita/meta-utils/releases/download/0.8/meta-utils-0.8.jar
 
 ### Eclipse (tested in Juno)
