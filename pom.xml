@@ -5,9 +5,9 @@
     <version>0.8</version>
     <build>
         <resources>
-                <resource>
-                    <directory>${basedir}/src/main/resources</directory>
-                </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
         </resources>
         
         <plugins>
@@ -19,6 +19,7 @@
                     <target>1.6</target>
                     <encoding>UTF-8</encoding>
                     <optimize>true</optimize>
+                    <proc>none</proc>
                 </configuration>
             </plugin>
             <plugin>
@@ -36,6 +37,7 @@
             <groupId>fi.solita.utils</groupId>
             <artifactId>functional-utils</artifactId>
             <version>0.8</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency>
