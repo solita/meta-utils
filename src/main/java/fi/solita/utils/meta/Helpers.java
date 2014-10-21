@@ -3,7 +3,15 @@ package fi.solita.utils.meta;
 import static fi.solita.utils.functional.Collections.newList;
 import static fi.solita.utils.functional.Collections.newMap;
 import static fi.solita.utils.functional.Collections.newSet;
-import static fi.solita.utils.functional.Functional.*;
+import static fi.solita.utils.functional.Functional.concat;
+import static fi.solita.utils.functional.Functional.head;
+import static fi.solita.utils.functional.Functional.zip;
+import static fi.solita.utils.functional.FunctionalC.reverse;
+import static fi.solita.utils.functional.FunctionalImpl.exists;
+import static fi.solita.utils.functional.FunctionalImpl.filter;
+import static fi.solita.utils.functional.FunctionalImpl.groupBy;
+import static fi.solita.utils.functional.FunctionalImpl.map;
+import static fi.solita.utils.functional.FunctionalImpl.reduce;
 import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.functional.Transformers.prepend;
 
@@ -11,8 +19,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,9 +58,7 @@ import javax.lang.model.util.Types;
 import fi.solita.utils.functional.Collections;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Functional;
-import fi.solita.utils.functional.Iterables;
 import fi.solita.utils.functional.Monoids;
-import fi.solita.utils.functional.Ordering;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
 import fi.solita.utils.functional.Tuple2;
@@ -283,7 +287,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<VariableElement> transform(Element source) {
-            return sort((Iterable<VariableElement>) filter(source.getEnclosedElements(), fields), variableElementComparator);
+            return (Iterable<VariableElement>) filter(Workaround.getEnclosedElementsDeclarationOrder(source), fields);
         }
     };
     
@@ -291,7 +295,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<ExecutableElement> transform(Element source) {
-            return sort((Iterable<ExecutableElement>) filter(source.getEnclosedElements(), methods), executableElementComparator);
+            return (Iterable<ExecutableElement>) filter(Workaround.getEnclosedElementsDeclarationOrder(source), methods);
         }
     };
     
@@ -299,68 +303,10 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<ExecutableElement> transform(Element source) {
-            return sort((Iterable<ExecutableElement>)filter(source.getEnclosedElements(), constructors), executableElementComparator);
+            return (Iterable<ExecutableElement>)filter(Workaround.getEnclosedElementsDeclarationOrder(source), constructors);
         }
     };
 
-    public static final Comparator<Element> variableElementComparator = new Ordering<Element>() {
-        @Override
-        public int compare(Element o1, Element o2) {
-            return o1.getSimpleName().toString().compareTo(o2.getSimpleName().toString());
-        }
-    }.then(new Ordering<Element>() {
-        @Override
-        public int compare(Element o1, Element o2) {
-            return type.apply(o1).toString().toLowerCase().compareTo(type.apply(o2).toString().toLowerCase());
-        }
-    });
-    
-    public static final Comparator<ExecutableElement> executableElementComparator =  reduce(
-        new Ordering<ExecutableElement>() {
-            @Override
-            public int compare(ExecutableElement o1, ExecutableElement o2) {
-                return kind.apply(o1).compareTo(kind.apply(o2));
-            }
-        },
-        new Ordering<ExecutableElement>() {
-            @Override
-            public int compare(ExecutableElement o1, ExecutableElement o2) {
-                return byIterable(variableElementComparator).compare(o1.getParameters(), o2.getParameters());
-            }
-        },
-        new Ordering<ExecutableElement>() {
-            @Override
-            public int compare(ExecutableElement o1, ExecutableElement o2) {
-                return o1.getReturnType().toString().compareTo(o2.getReturnType().toString());
-            }
-        }
-    );
-    
-    private static final <S, T extends Iterable<? extends S>> Ordering<T> byIterable(final Comparator<S> c) {
-        return new Ordering<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                for (Long s1: Iterables.resolveSize.apply(o1)) {
-                    for (Long s2: Iterables.resolveSize.apply(o2)) {
-                        int s = s1.compareTo(s2);
-                        if (s != 0) {
-                            return s;
-                        }
-                    }
-                }
-                Iterator<? extends S> it1 = o1.iterator();
-                Iterator<? extends S> it2 = o2.iterator();
-                while (it1.hasNext() && it2.hasNext()) {
-                    int i = c.compare(it1.next(), it2.next());
-                    if (i != 0) {
-                        return i;
-                    }
-                }
-                return it1.hasNext() ? 1 : it2.hasNext() ? -1 : 0;
-            }
-        };
-    }
-    
     public static final Function1<Element, Iterable<TypeElement>> element2NestedClasses = new Transformer<Element, Iterable<TypeElement>>() {
         @SuppressWarnings("unchecked")
         @Override

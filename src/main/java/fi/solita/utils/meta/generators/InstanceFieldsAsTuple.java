@@ -25,6 +25,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import fi.solita.utils.meta.Helpers;
+import fi.solita.utils.meta.Workaround;
 import fi.solita.utils.meta.Helpers.EnvDependent;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Transformer;
@@ -48,8 +49,7 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, final Options options, final TypeElement enclosingElement) {
-        @SuppressWarnings("unchecked")
-        Iterable<VariableElement> elements = (Iterable<VariableElement>) filter(enclosingElement.getEnclosedElements(), Helpers.fields);
+        Iterable<VariableElement> elements = Helpers.element2Fields.apply(enclosingElement);
         if (options.onlyPublicMembers()) {
             elements = filter(elements, publicElement);
         }
