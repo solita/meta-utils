@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
+import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
 
 import fi.solita.utils.functional.Option;
@@ -28,7 +29,7 @@ public class ClassFileWriter {
     private static final String GENERATED = Generated.class.getSimpleName();
     private static final String LINE_SEP = System.getProperty("line.separator");
     
-    public static void writeClassFile(String packageName, String classSimpleName, Option<String> extendedClassName, Iterable<String> contentLines, Class<?> generator, Filer filer, Option<SuppressWarnings> classSupressWarnings, boolean isDeprecated) {
+    public static void writeClassFile(String packageName, String classSimpleName, Option<String> extendedClassName, Iterable<String> contentLines, Class<?> generator, Filer filer, TypeElement originalClass, Option<SuppressWarnings> classSupressWarnings, boolean isDeprecated) {
         Map<String,String> toImport = newMap();
         toImport.put(GENERATED, "javax.annotation.Generated");
         toImport.put(SERIALIZABLE, "java.io.Serializable");
@@ -63,7 +64,7 @@ public class ClassFileWriter {
         
         try {
             String extend = extendedClassName.isDefined() ? " extends " + extendedClassName.get() : "";
-            FileObject fo = filer.createSourceFile((packageName.isEmpty() ? "" : packageName + ".") + classSimpleName);
+            FileObject fo = filer.createSourceFile((packageName.isEmpty() ? "" : packageName + ".") + classSimpleName, originalClass);
             Writer pw = fo.openWriter();
             
             if (!packageName.isEmpty()) {
