@@ -311,7 +311,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<TypeElement> transform(Element source) {
-            return (Iterable<TypeElement>) filter(source.getEnclosedElements(), (classes.or(interfaces)).and(staticElements));
+            return (Iterable<TypeElement>) filter(source.getEnclosedElements(), enums.or((classes.or(interfaces)).and(staticElements)));
         }
     };
     
@@ -354,6 +354,13 @@ public abstract class Helpers {
         @Override
         public boolean accept(Element candidate) {
             return candidate.getKind() == ElementKind.CLASS;
+        }
+    };
+    
+    public static final Predicate<Element> enums = new Predicate<Element>() {
+        @Override
+        public boolean accept(Element candidate) {
+            return candidate.getKind() == ElementKind.ENUM;
         }
     };
     
