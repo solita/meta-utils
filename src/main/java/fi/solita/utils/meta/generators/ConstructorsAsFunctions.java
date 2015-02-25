@@ -1,5 +1,16 @@
 package fi.solita.utils.meta.generators;
 
+import static fi.solita.utils.functional.Collections.emptyList;
+import static fi.solita.utils.functional.Collections.newList;
+import static fi.solita.utils.functional.Functional.concat;
+import static fi.solita.utils.functional.Functional.cons;
+import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatten;
+import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.mkString;
+import static fi.solita.utils.functional.Functional.zip;
+import static fi.solita.utils.functional.Functional.zipWithIndex;
+import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.meta.Helpers.boxedQualifiedName;
 import static fi.solita.utils.meta.Helpers.element2Constructors;
 import static fi.solita.utils.meta.Helpers.elementGenericQualifiedName;
@@ -21,18 +32,6 @@ import static fi.solita.utils.meta.generators.Content.EmptyLine;
 import static fi.solita.utils.meta.generators.Content.None;
 import static fi.solita.utils.meta.generators.Content.catchBlock;
 import static fi.solita.utils.meta.generators.Content.reflectionInvokationArgs;
-import static fi.solita.utils.functional.Collections.emptyList;
-import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Functional.concat;
-import static fi.solita.utils.functional.Functional.cons;
-import static fi.solita.utils.functional.Functional.flatten;
-import static fi.solita.utils.functional.Functional.mkString;
-import static fi.solita.utils.functional.Functional.zip;
-import static fi.solita.utils.functional.Functional.zipWithIndex;
-import static fi.solita.utils.functional.FunctionalA.concat;
-import static fi.solita.utils.functional.FunctionalImpl.filter;
-import static fi.solita.utils.functional.FunctionalImpl.map;
-import static fi.solita.utils.functional.Option.Some;
 
 import java.util.List;
 import java.util.Map;
@@ -45,10 +44,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 
-import fi.solita.utils.meta.Helpers;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function3;
+import fi.solita.utils.meta.Helpers;
 
 public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.Options> {
     
@@ -71,11 +70,11 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
 
         Iterable<ExecutableElement> elements = element2Constructors.apply(source);
         if (options.onlyPublicMembers()) {
-            elements = filter(elements, publicElement);
+            elements = filter(publicElement, elements);
         }
         
         Function1<Entry<Integer, ExecutableElement>, Iterable<String>> singleElementTransformer = constructorGen.ap(new Helpers.EnvDependent(processingEnv), options);
-        Iterable<Iterable<String>> rm = newList(map(newList(zipWithIndex(elements)), singleElementTransformer));
+        Iterable<Iterable<String>> rm = newList(map(singleElementTransformer, newList(zipWithIndex(elements))));
         return flatten(rm);
     }
     
@@ -88,7 +87,7 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
             int index = entry.getKey();
 
             List<? extends TypeParameterElement> relevantTypeParams = newList(relevantTypeParams(constructor));
-            String relevantTypeParamsString = relevantTypeParams.isEmpty() ? "" : "<" + importTypes(mkString(", ", map(relevantTypeParams, typeParameter2String))) + ">";
+            String relevantTypeParamsString = relevantTypeParams.isEmpty() ? "" : "<" + importTypes(mkString(", ", map(typeParameter2String, relevantTypeParams))) + ">";
             List<? extends VariableElement> parameters = constructor.getParameters();
             boolean needsToBeFunction = !relevantTypeParams.isEmpty();
             
@@ -100,8 +99,8 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
             String returnTypeImported = importTypes(elementGenericQualifiedName(enclosingElement));
             
             int argCount = constructor.getParameters().size();
-            List<String> argTypes = newList(map(parameters, boxedQualifiedName));
-            List<String> argNames = newList(map(parameters, simpleName));
+            List<String> argTypes = newList(map(boxedQualifiedName, parameters));
+            List<String> argNames = newList(map(simpleName, parameters));
             List<String> argNamesWithCast = newList(paramsWithCast(parameters, isPrivate));
 
             String fieldName = "$" + (index == 0 ? "" : index);
@@ -116,14 +115,14 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
             Iterable<String> tryCatchBlock = isPrivate || throwsChecked
                 ? concat(
                     Some("try {"),
-                    map(tryBlock, padding),
+                    map(padding, tryBlock),
                     catchBlock,
                     Some("}"))
                 : tryBlock;
                     
             Iterable<String> applyBlock = concat(
-                Some("public " + returnTypeImported + " apply(" + mkString(", ", map(zip(argTypes, argNames), joinWithSpace)) + ") {"),
-                map(tryCatchBlock, padding),
+                Some("public " + returnTypeImported + " apply(" + mkString(", ", map(joinWithSpace, zip(argTypes, argNames))) + ") {"),
+                map(padding, tryCatchBlock),
                 Some("}")
             );
             
@@ -133,9 +132,9 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
                     ? Some("@SuppressWarnings(\"rawtypes\")")
                     : None,
                 Some(declaration + (needsToBeFunction ? "() { return" : " =") + " new " + fundef + "(" + mkString(", ", cons(importTypes(enclosingElementQualifiedName) + ".class", reflectionInvokationArgs(parameterTypesAsClasses(constructor, relevantTypeParams)))) + ") {"),
-                map(applyBlock, padding),
+                map(padding, applyBlock),
                 EmptyLine,
-                map(options.getAdditionalBodyLinesForConstructors(constructor), padding),
+                map(padding, options.getAdditionalBodyLinesForConstructors(constructor)),
                 Some("};"),
                 needsToBeFunction
                     ? Some("}")

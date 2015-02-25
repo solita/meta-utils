@@ -4,14 +4,14 @@ import static fi.solita.utils.functional.Collections.newList;
 import static fi.solita.utils.functional.Collections.newMap;
 import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.concat;
+import static fi.solita.utils.functional.Functional.exists;
+import static fi.solita.utils.functional.Functional.filter;
 import static fi.solita.utils.functional.Functional.head;
+import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.reduce;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.FunctionalC.reverse;
-import static fi.solita.utils.functional.FunctionalImpl.exists;
-import static fi.solita.utils.functional.FunctionalImpl.filter;
-import static fi.solita.utils.functional.FunctionalImpl.groupBy;
-import static fi.solita.utils.functional.FunctionalImpl.map;
-import static fi.solita.utils.functional.FunctionalImpl.reduce;
+import static fi.solita.utils.functional.FunctionalM.groupBy;
 import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.functional.Transformers.prepend;
 
@@ -110,7 +110,7 @@ public abstract class Helpers {
     public static final Transformer<TypeParameterElement,String> typeParameter2String = new Transformer<TypeParameterElement,String>() {
         @Override
         public String transform(TypeParameterElement source) {
-            String bound = Functional.mkString(" & ", map(source.getBounds(), typeMirror2GenericQualifiedName)).toString();
+            String bound = Functional.mkString(" & ", map(typeMirror2GenericQualifiedName, source.getBounds())).toString();
             return source.getSimpleName().toString() + (bound.equals("java.lang.Object") ? "" : " extends " + bound);
         }
     };
@@ -143,11 +143,11 @@ public abstract class Helpers {
             if (params == null) {
                 return type;
             } else {
-                List<String> p = newList(filter(map(params, this), notEmpty));
+                List<String> p = newList(filter(notEmpty, map(this, params)));
                 if (p.isEmpty()) {
                     return type;
                 } else {
-                    return type + "<" + Functional.mkString(", ", map(p, boxed)) + ">";
+                    return type + "<" + Functional.mkString(", ", map(boxed, p)) + ">";
                 }
             }
         }
@@ -222,7 +222,7 @@ public abstract class Helpers {
     
     public static final <T extends TypeParameterElement> Function1<String, String> handleTypeVariables(final List<T> typeParameters) {
         // FIXME: How to "convert" a typeVariable to a concrete class?
-        final Map<String, List<T>> bySimpleName = groupBy(typeParameters, simpleName);
+        final Map<String, List<T>> bySimpleName = groupBy(simpleName, typeParameters);
         return new Transformer<String, String>() {
             @Override
             public String transform(String source) {
@@ -287,7 +287,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<VariableElement> transform(Element source) {
-            return (Iterable<VariableElement>) filter(Workaround.getEnclosedElementsDeclarationOrder(source), fields);
+            return (Iterable<VariableElement>) filter(fields, Workaround.getEnclosedElementsDeclarationOrder(source));
         }
     };
     
@@ -295,7 +295,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<ExecutableElement> transform(Element source) {
-            return (Iterable<ExecutableElement>) filter(Workaround.getEnclosedElementsDeclarationOrder(source), methods);
+            return (Iterable<ExecutableElement>) filter(methods, Workaround.getEnclosedElementsDeclarationOrder(source));
         }
     };
     
@@ -303,7 +303,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<ExecutableElement> transform(Element source) {
-            return (Iterable<ExecutableElement>)filter(Workaround.getEnclosedElementsDeclarationOrder(source), constructors);
+            return (Iterable<ExecutableElement>)filter(constructors, Workaround.getEnclosedElementsDeclarationOrder(source));
         }
     };
 
@@ -311,7 +311,7 @@ public abstract class Helpers {
         @SuppressWarnings("unchecked")
         @Override
         public Iterable<TypeElement> transform(Element source) {
-            return (Iterable<TypeElement>) filter(source.getEnclosedElements(), enums.or((classes.or(interfaces)).and(staticElements)));
+            return (Iterable<TypeElement>) filter(enums.or((classes.or(interfaces)).and(staticElements)), source.getEnclosedElements());
         }
     };
     
@@ -485,7 +485,7 @@ public abstract class Helpers {
         }
         
         public final boolean throwsCheckedExceptions(ExecutableElement e) {
-            return exists(e.getThrownTypes(), not(uncheckedExceptions));
+            return exists(not(uncheckedExceptions), e.getThrownTypes());
         }
     }
     
@@ -510,13 +510,13 @@ public abstract class Helpers {
         if (staticElements.accept(e)) {
             return typeParameters;
         }
-        final Set<String> typeParameterNames = newSet(map(typeParameters, simpleName));
-        Iterable<? extends TypeParameterElement> enclosingTypeVars = filter(((TypeElement)e.getEnclosingElement()).getTypeParameters(), simpleName.andThen(new Predicate<String>() {
+        final Set<String> typeParameterNames = newSet(map(simpleName, typeParameters));
+        Iterable<? extends TypeParameterElement> enclosingTypeVars = filter(simpleName.andThen(new Predicate<String>() {
             @Override
             public boolean accept(String candidate) {
                 return !typeParameterNames.contains(candidate);
             }
-        }));
+        }), ((TypeElement)e.getEnclosingElement()).getTypeParameters());
         return concat(enclosingTypeVars, typeParameters);
     }
 
@@ -529,23 +529,23 @@ public abstract class Helpers {
             return typeParameters;
         }
         
-        final Set<String> typeParameterNames = newSet(map(typeParameters, simpleName));
-        Iterable<? extends TypeParameterElement> enclosingTypeVars = filter(((TypeElement)e.getEnclosingElement()).getTypeParameters(), simpleName.andThen(new Predicate<String>() {
+        final Set<String> typeParameterNames = newSet(map(simpleName, typeParameters));
+        Iterable<? extends TypeParameterElement> enclosingTypeVars = filter(simpleName.andThen(new Predicate<String>() {
             @Override
             public boolean accept(String candidate) {
                 return !typeParameterNames.contains(candidate);
             }
-        }));
+        }), ((TypeElement)e.getEnclosingElement()).getTypeParameters());
         if (e.getKind() == ElementKind.CONSTRUCTOR) {
             return concat(enclosingTypeVars, typeParameters);
         }
         final Set<Name> allUsedTypeParameters = allUsedTypeParameters(e);
-        return concat(filter(enclosingTypeVars, new Predicate<TypeParameterElement>() {
+        return concat(filter(new Predicate<TypeParameterElement>() {
                 @Override
                 public boolean accept(TypeParameterElement candidate) {
                     return allUsedTypeParameters.contains(candidate.getSimpleName());
                 }
-            }), typeParameters);
+            }, enclosingTypeVars), typeParameters);
     }
     
     //private static final Map<String,Pattern> patternCacheForUsedIn = newMap();
@@ -682,7 +682,7 @@ public abstract class Helpers {
     }
     
     public static final Iterable<String> parameterTypesAsClasses(ExecutableElement element, List<? extends TypeParameterElement> relevantTypeParams) {
-        return map(element.getParameters(), qualifiedName.andThen(handleTypeVariables(relevantTypeParams).andThen(removeGenericPart)));
+        return map(qualifiedName.andThen(handleTypeVariables(relevantTypeParams).andThen(removeGenericPart)), element.getParameters());
     }
     
     public static final Transformer<String,String> removeGenericPart = new Transformer<String,String>() {
@@ -694,22 +694,23 @@ public abstract class Helpers {
     };
     
     public static final String elementGenericQualifiedName(TypeElement enclosingElement) {
-        return qualifiedName.apply(enclosingElement) + (enclosingElement.getTypeParameters().isEmpty() ? "" : "<" + Functional.mkString(", ", map(enclosingElement.getTypeParameters(), qualifiedName)) + ">");
+        return qualifiedName.apply(enclosingElement) + (enclosingElement.getTypeParameters().isEmpty() ? "" : "<" + Functional.mkString(", ", map(qualifiedName, enclosingElement.getTypeParameters())) + ">");
     }
     
     public static final Iterable<String> paramsWithCast(List<? extends VariableElement> parameters, final boolean isPrivate) {
-        Iterable<String> argCasts = map(parameters, new Transformer<VariableElement, String>() {
+        Iterable<String> argCasts = map(new Transformer<VariableElement, String>() {
             @Override
             public String transform(VariableElement source) {
                 return isPrivate ? "(Object)" :
                        source.asType().getKind().isPrimitive() ? "(" + qualifiedName.apply(source) + ")" :
                        "";
             }
-        });
-        return map(zip(argCasts, map(parameters, simpleName)), join);
+        }, parameters);
+        return map(join, zip(argCasts, map(simpleName, parameters)));
     }
     
-    public static final Predicate<Element> withAnnotation(final String className) {
+    public static final Predicate<Element> withAnnotations(final String classNames) {
+        final Set<String> className = newSet(classNames.split(","));
         return new Predicate<Element>() {
             @Override
             public boolean accept(final Element e) {
@@ -721,13 +722,13 @@ public abstract class Helpers {
                     return false;
                 }
                 visited.add(e);
-                return exists(e.getAnnotationMirrors(), new Predicate<AnnotationMirror>() {
+                return exists(new Predicate<AnnotationMirror>() {
                     @Override
                     public boolean accept(AnnotationMirror m) {
                         Element elem = m.getAnnotationType().asElement();
-                        return qualifiedName.apply(elem).equals(className) || !elem.equals(e) && acc(elem, visited);
+                        return className.contains(qualifiedName.apply(elem)) || !elem.equals(e) && acc(elem, visited);
                     }
-                });
+                }, e.getAnnotationMirrors());
             }
         };
     }
@@ -820,7 +821,7 @@ public abstract class Helpers {
     public static final Transformer<Iterable<Long>,Long> iterableSum = new Transformer<Iterable<Long>,Long>() {
         @Override
         public Long transform(Iterable<Long> source) {
-            return reduce(source, Monoids.longSum);
+            return reduce(Monoids.longSum, source);
         }
     };
 

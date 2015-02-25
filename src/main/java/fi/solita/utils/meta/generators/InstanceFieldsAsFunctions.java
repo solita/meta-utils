@@ -20,14 +20,14 @@ import static fi.solita.utils.meta.generators.Content.None;
 import static fi.solita.utils.meta.generators.Content.catchBlock;
 import static fi.solita.utils.functional.Collections.newList;
 import static fi.solita.utils.functional.Functional.contains;
+import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.isEmpty;
+import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.subtract;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.FunctionalA.concat;
-import static fi.solita.utils.functional.FunctionalImpl.filter;
-import static fi.solita.utils.functional.FunctionalImpl.flatMap;
-import static fi.solita.utils.functional.FunctionalImpl.map;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.not;
 
@@ -67,10 +67,10 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
         Iterable<VariableElement> elements = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
-            elements = filter(elements, publicElement);
+            elements = filter(publicElement, elements);
         }
       
-        return flatMap(filter(elements, not(staticElements)), variableElementGen.ap(options, new Helpers.EnvDependent(processingEnv)));
+        return flatMap(variableElementGen.ap(options, new Helpers.EnvDependent(processingEnv)), filter(not(staticElements), elements));
     }
     
     static final Transformer<String,Pattern> toReplacePattern = new Transformer<String,Pattern>() {
@@ -98,21 +98,21 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             
             String returnType = resolveBoxedGenericType(field.asType(), helper.elementUtils);
             
-            Iterable<String> allTypeParams = map(enclosingElement.getTypeParameters(), typeParameter2String);
-            List<String> allTypeParamsWithoutConstraints = newList(map(enclosingElement.getTypeParameters(), simpleName));
+            Iterable<String> allTypeParams = map(typeParameter2String, enclosingElement.getTypeParameters());
+            List<String> allTypeParamsWithoutConstraints = newList(map(simpleName, enclosingElement.getTypeParameters()));
             final String rett = ("." + returnType + ".");
-            List<Tuple2<String, String>> relevantTypeParamPairs = newList(filter(zip(allTypeParams, allTypeParamsWithoutConstraints), new Predicate<Tuple2<String,String>>() {
+            List<Tuple2<String, String>> relevantTypeParamPairs = newList(filter(new Predicate<Tuple2<String,String>>() {
                 @Override
                 public boolean accept(Tuple2<String,String> candidate) {
                     return rett.matches(".*[^a-zA-Z0-9_]" + Pattern.quote(candidate._2.toString()) + "[^a-zA-Z0-9_].*");
                 }
-            }));
+            }, zip(allTypeParams, allTypeParamsWithoutConstraints)));
             
-            List<String> relevantTypeParams = newList(map(relevantTypeParamPairs, Helpers.<String>left()));
-            relevantTypeParamsWithoutConstraints = newList(map(relevantTypeParamPairs, Helpers.<String>right()));
+            List<String> relevantTypeParams = newList(map(Helpers.<String>left(), relevantTypeParamPairs));
+            relevantTypeParamsWithoutConstraints = newList(map(Helpers.<String>right(), relevantTypeParamPairs));
 
             final List<String> toReplace = newList(subtract(allTypeParamsWithoutConstraints, relevantTypeParamsWithoutConstraints));
-            final List<Pattern> toReplacePatterns = newList(map(toReplace, toReplacePattern));
+            final List<Pattern> toReplacePatterns = newList(map(toReplacePattern, toReplace));
             Transformer<String,String> doReplace = new Transformer<String,String>() {
                 @Override
                 public String transform(String candidate) {
@@ -127,7 +127,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             boolean isFinal = isFinal(field);
             needsToBeFunction = !relevantTypeParams.isEmpty();
             
-            relevantTypeParamsString = isEmpty(relevantTypeParams) ? "" : "<" + mkString(", ", map(relevantTypeParams, doReplace)) + ">";
+            relevantTypeParamsString = isEmpty(relevantTypeParams) ? "" : "<" + mkString(", ", map(doReplace, relevantTypeParams)) + ">";
             returnType = doReplace.apply(returnType);
             String returnTypeImported = importTypes(returnType);
             
@@ -157,14 +157,14 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             Iterable<String> tryCatchBlock = isPrivate
                 ? concat(
                     Some("try {"),
-                    map(tryBlock, padding),
+                    map(padding, tryBlock),
                     catchBlock,
                     Some("}"))
                 : tryBlock;
                         
             Iterable<String> applyBlock = concat(
                 Some("public final " + implementedMethod + "(final " + (needsToBeFunction ? enclosingElementQualifiedNameImported : enclosingElementGenericQualifiedNameImported) + " $self) {"),
-                map(tryCatchBlock, padding),
+                map(padding, tryCatchBlock),
                 Some("}")
             );
             
@@ -175,7 +175,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             Iterable<String> setTryCatchBlock = isPrivate
                     ? concat(
                         Some("try {"),
-                        map(setTryBlock, padding),
+                        map(padding, setTryBlock),
                         catchBlock,
                         Some("}"))
                     : setTryBlock;
@@ -184,7 +184,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
                     needsToBeFunction
                         ? Some("public final " + setterFundef + " setter(final " + (needsToBeFunction ? enclosingElementQualifiedNameImported : enclosingElementGenericQualifiedNameImported) + " $self) { return new " + setterFundef + "() { public Void apply(final Object $newValue) {")
                         : Some("public final " + relevantTypeParamsString + " " + setterFundef + " setter(final " + (needsToBeFunction ? enclosingElementQualifiedNameImported : enclosingElementGenericQualifiedNameImported) + " $self) { return new " + setterFundef + "() { public Void apply(final " + returnTypeImported + " $newValue) {"),
-                    map(setTryCatchBlock, padding),
+                    map(padding, setTryCatchBlock),
                     Some("    return null;"),
                     Some("}};}")
                 );
@@ -197,13 +197,13 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
                     ? newList(enclosingElementQualifiedNameImported.equals(enclosingElementGenericQualifiedNameImported) ? "" : "@SuppressWarnings(\"rawtypes\")",
                               privateDeclaration + " = new " + privateFundef + initParams + " {")
                     : Some(declaration + " = new " + fundef + initParams + " {"),
-                map(options.getAdditionalBodyLinesForInstanceFields(), padding),
+                map(padding, options.getAdditionalBodyLinesForInstanceFields()),
                 EmptyLine,
                 isPrivate && !needsToBeFunction && (field.getEnclosingElement().getAnnotation(SuppressWarnings.class) == null || !contains("unchecked", field.getEnclosingElement().getAnnotation(SuppressWarnings.class).value())) && (hasNonQmarkGenerics(returnType) || field.asType().getKind() == TypeKind.TYPEVAR)
                     ? Some("    @SuppressWarnings(\"unchecked\")")
                     : None,
-                map(applyBlock, padding),
-                isFinal ? None : map(setBlock, padding),
+                map(padding, applyBlock),
+                isFinal ? None : map(padding, setBlock),
                 Some("};"),
                 needsToBeFunction
                     ? newList("@SuppressWarnings(\"unchecked\")",

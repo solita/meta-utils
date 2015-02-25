@@ -1,14 +1,14 @@
 package fi.solita.utils.meta;
 
-import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
+import static fi.solita.utils.functional.FunctionalA.map;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import fi.solita.utils.meta.generators.Content;
 import fi.solita.utils.functional.Function0;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function10;
@@ -44,7 +44,6 @@ import fi.solita.utils.functional.Tuple16;
 import fi.solita.utils.functional.Tuple17;
 import fi.solita.utils.functional.Tuple18;
 import fi.solita.utils.functional.Tuple19;
-import fi.solita.utils.functional.Tuple2;
 import fi.solita.utils.functional.Tuple20;
 import fi.solita.utils.functional.Tuple21;
 import fi.solita.utils.functional.Tuple22;
@@ -55,6 +54,7 @@ import fi.solita.utils.functional.Tuple6;
 import fi.solita.utils.functional.Tuple7;
 import fi.solita.utils.functional.Tuple8;
 import fi.solita.utils.functional.Tuple9;
+import fi.solita.utils.meta.generators.Content;
 
 public abstract class MetaConstructors {
     static final <R> Constructor<R> doGetMember(Class<?> clazz, Class<?>... argClasses) {
@@ -73,7 +73,7 @@ public abstract class MetaConstructors {
         };
     };
     static final String doToString(Class<?> clazz, Class<?>[] argClasses) {
-        return clazz.getSimpleName() + "(" + mkString(", ", map(argClasses, className)) + ")";
+        return clazz.getSimpleName() + "(" + mkString(", ", map(className, argClasses)) + ")";
     }
     
     public static abstract class C0<R> extends Function0<R> implements MetaConstructor<Tuple0,R> {
@@ -124,7 +124,7 @@ public abstract class MetaConstructors {
             return doToString(clazz, argClasses);
         }
     }
-    public static abstract class C2<T1,T2,R> extends Function2<T1,T2,R> implements MetaConstructor<Tuple2<T1,T2>,R> {
+    public static abstract class C2<T1,T2,R> extends Function2<T1,T2,R> implements MetaConstructor<Map.Entry<T1,T2>,R> {
         private transient Constructor<R> $r;
         private final Class<?> clazz;
         private final Class<?>[] argClasses;

@@ -10,7 +10,7 @@ import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.removeGenericPart;
 import static fi.solita.utils.meta.Helpers.simpleName;
-import static fi.solita.utils.meta.Helpers.withAnnotation;
+import static fi.solita.utils.meta.Helpers.withAnnotations;
 import static fi.solita.utils.functional.Collections.emptyList;
 import static fi.solita.utils.functional.Collections.newArray;
 import static fi.solita.utils.functional.Collections.newList;
@@ -20,6 +20,7 @@ import static fi.solita.utils.functional.Functional.filter;
 import static fi.solita.utils.functional.Functional.find;
 import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.sequence;
 import static fi.solita.utils.functional.Functional.transpose;
 import static fi.solita.utils.functional.Option.Some;
@@ -52,6 +53,7 @@ import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
 import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
 import fi.solita.utils.meta.generators.MethodsAsFunctions;
 import fi.solita.utils.functional.Apply;
+import fi.solita.utils.functional.Function;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Option;
 import fi.solita.utils.functional.Pair;
@@ -96,7 +98,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public String generatedClassNamePattern() { return findOption(Options.generatedClassNamePattern, "{}_"); }
     public String generatedPackagePattern()   { return findOption(Options.generatedPackagePattern, "{}"); }
     public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
-    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, NoMetadataGeneration.class.getName()); }
+    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
     public Pattern extendClassNamePattern()   { return Pattern.compile("<not enabled>"); }
 
     public String findOption(String option, String defaultIfNotFound) {
@@ -105,8 +107,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     
     public Predicate<Element> elementsToProcess() { return Helpers.<Element>instanceOf(TypeElement.class).and(
                                                            nonGeneratedElements).and(
-                                                           (includeAllByAnnotation.or(withAnnotation(includesAnnotation())))).and(
-                                                           not(withAnnotation(excludesAnnotation()))).and(
+                                                           (includeAllByAnnotation.or(withAnnotations(includesAnnotation())))).and(
+                                                           not(withAnnotations(excludesAnnotation()))).and(
                                                            qualifiedName.andThen(matches(includesRegex()).and(
                                                                                  not(matches(excludesRegex()))))).and(
                                                            simpleName.andThen(not(equalTo("package-info")))); }
@@ -153,7 +155,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 @Override
                 public Pair<Long, List<String>> apply(TypeElement t) {
                     long start = System.nanoTime();
-                    List<String> result = newList(map(source.apply(t), padding));
+                    List<String> result = newList(map(padding, source.apply(t)));
                     return Pair.of(System.nanoTime() - start, result);
                 }
             };
@@ -180,7 +182,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         for (Generator<? super OPTIONS> g: generators()) {
             generators.add(g.ap(processingEnv, options));
         }
-        List<Apply<TypeElement, Pair<Long, List<String>>>> generatorsWithTiming = newList(map(generators, timed));
+        List<Apply<TypeElement, Pair<Long, List<String>>>> generatorsWithTiming = newList(map(timed, generators));
         
         String genClassNamePat = generatedClassNamePattern();
         String genPackagePat = generatedPackagePattern();
@@ -196,23 +198,23 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         long[] cumulativeGeneratorTimes = new long[generators.size()];
         Predicate<Element> acceptedElement = elementsToProcess();
         @SuppressWarnings("unchecked")
-        List<TypeElement> elementsToProcess = newList((Iterable<TypeElement>)filter(roundEnv.getRootElements(), acceptedElement));
+        List<TypeElement> elementsToProcess = newList((Iterable<TypeElement>)filter(acceptedElement, roundEnv.getRootElements()));
         if (options.onlyPublicMembers()) {
-            elementsToProcess = newList(filter(elementsToProcess, publicElement));
+            elementsToProcess = newList(filter(publicElement, elementsToProcess));
         }
-        Apply<TypeElement, Pair<List<Long>, List<String>>> nestedDataProducer = Content.withNestedClasses.ap(options, genClassNamePat, acceptedElement, generatorsWithTiming);
+        Apply<TypeElement, Pair<List<Long>, List<String>>> nestedDataProducer = Content.withNestedClasses.ap(options, genClassNamePat, Predicate.of(Function.<Element,Boolean>constant(true)), generatorsWithTiming);
         for (TypeElement element: elementsToProcess) {
             try {
                 long time = System.nanoTime();
-                List<Pair<Long, List<String>>> elemData = newList(sequence(generatorsWithTiming, element));
+                List<Pair<Long, List<String>>> elemData = newList(sequence(element, generatorsWithTiming));
                 long time2 = System.nanoTime();
                 Iterable<TypeElement> nestedToProcess = element2NestedClasses.apply(element);
                 if (options.onlyPublicMembers()) {
-                    nestedToProcess = newList(filter(nestedToProcess, publicElement));
+                    nestedToProcess = newList(filter(publicElement, nestedToProcess));
                 }
-                List<Pair<List<Long>, List<String>>> nestedData = newList(map(filter(nestedToProcess, acceptedElement), nestedDataProducer));
+                List<Pair<List<Long>, List<String>>> nestedData = newList(map(nestedDataProducer, filter(Predicate.of(Function.<Element,Boolean>constant(true)), nestedToProcess)));
                 long time3 = System.nanoTime();
-                Iterable<String> content = map(concat(flatMap(elemData, Helpers.<List<String>>right()), flatMap(nestedData, Helpers.<List<String>>right())), padding);
+                Iterable<String> content = map(padding, concat(flatMap(Helpers.<List<String>>right(), elemData), flatMap(Helpers.<List<String>>right(), nestedData)));
                 
                 String genPackage = genPackagePat.replace("{}", getPackageName(element));
                 String genClassName = genClassNamePat.replace("{}", element.getSimpleName().toString());
@@ -226,9 +228,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 rest += time4 - time3;
                 fileWriting += System.nanoTime() - time4;
     
-                Iterable<Long> generatorTimesForContent = map(elemData, Helpers.<Long>left());
-                Iterable<List<Long>> generatorTimesForNestedClasses = map(nestedData, Helpers.<List<Long>>left());
-                Long[] totalTimesPerGenerator = newArray(Long.class, map(transpose(cons(generatorTimesForContent, generatorTimesForNestedClasses)), Helpers.iterableSum));
+                Iterable<Long> generatorTimesForContent = map(Helpers.<Long>left(), elemData);
+                Iterable<List<Long>> generatorTimesForNestedClasses = map(Helpers.<List<Long>>left(), nestedData);
+                Long[] totalTimesPerGenerator = newArray(Long.class, map(Helpers.iterableSum, transpose(cons(generatorTimesForContent, generatorTimesForNestedClasses))));
                 
                 for (int i = 0; i < cumulativeGeneratorTimes.length; ++i) {
                     cumulativeGeneratorTimes[i] += totalTimesPerGenerator[i];
@@ -239,7 +241,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
             }
         }
         if (!elementsToProcess.isEmpty()) {
-            processingEnv.getMessager().printMessage(Kind.WARNING, getClass().getName() + " (" + version + ") processed " + elementsToProcess.size() + " elements in " + (System.nanoTime()-started)/1000/1000 + " ms (" + generation/1000/1000 + "/" + nestedGeneration/1000/1000 + "/" + rest/1000/1000 + "/" + fileWriting/1000/1000 + " ms) (" + newList(map(newArray(cumulativeGeneratorTimes), nanosToMillis)) + " ms)");
+            processingEnv.getMessager().printMessage(Kind.WARNING, getClass().getName() + " (" + version + ") processed " + elementsToProcess.size() + " elements in " + (System.nanoTime()-started)/1000/1000 + " ms (" + generation/1000/1000 + "/" + nestedGeneration/1000/1000 + "/" + rest/1000/1000 + "/" + fileWriting/1000/1000 + " ms) (" + newList(map(nanosToMillis, newArray(cumulativeGeneratorTimes))) + " ms)");
         }
         return false;
     }

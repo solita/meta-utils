@@ -9,11 +9,11 @@ import static fi.solita.utils.meta.Helpers.staticElements;
 import static fi.solita.utils.meta.Helpers.typeParameter2String;
 import static fi.solita.utils.functional.Collections.emptyList;
 import static fi.solita.utils.functional.Collections.newList;
+import static fi.solita.utils.functional.Functional.filter;
 import static fi.solita.utils.functional.Functional.isEmpty;
+import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.FunctionalA.concat;
-import static fi.solita.utils.functional.FunctionalImpl.filter;
-import static fi.solita.utils.functional.FunctionalImpl.map;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.not;
 
@@ -25,7 +25,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import fi.solita.utils.meta.Helpers;
-import fi.solita.utils.meta.Workaround;
 import fi.solita.utils.meta.Helpers.EnvDependent;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Transformer;
@@ -51,10 +50,10 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
     public Iterable<String> apply(ProcessingEnvironment processingEnv, final Options options, final TypeElement enclosingElement) {
         Iterable<VariableElement> elements = Helpers.element2Fields.apply(enclosingElement);
         if (options.onlyPublicMembers()) {
-            elements = filter(elements, publicElement);
+            elements = filter(publicElement, elements);
         }
         
-        List<VariableElement> fieldsToInclude = newList(filter(elements, not(staticElements)));
+        List<VariableElement> fieldsToInclude = newList(filter(not(staticElements), elements));
         if (fieldsToInclude.isEmpty() || fieldsToInclude.size() > Tuple.class.getDeclaredClasses().length) {
             return emptyList();
         }
@@ -63,13 +62,13 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         
         final String pack = options.generatedPackagePattern().replace("{}", getPackageName(enclosingElement));
         final String metaClassQualifiedName = pack + "." + options.generatedClassNamePattern().replace("{}", qualifiedName.apply(enclosingElement).replaceFirst(Pattern.quote(getPackageName(enclosingElement) + "."), "").replace(".", "_."));
-        List<String> allTypeParams = newList(map(enclosingElement.getTypeParameters(), typeParameter2String));
+        List<String> allTypeParams = newList(map(typeParameter2String, enclosingElement.getTypeParameters()));
         String typeParamsString = isEmpty(allTypeParams) ? "" : "<" + mkString(", ", allTypeParams) + ">";
         String tupleClass = Helpers.importTypes(Tuple.class.getName() + fieldsToInclude.size());
         
         final EnvDependent helper = new Helpers.EnvDependent(processingEnv);
         
-        List<Tuple3<String, String, Boolean>> fieldData = newList(map(fieldsToInclude, new Transformer<VariableElement,Tuple3<String,String,Boolean>>() {
+        List<Tuple3<String, String, Boolean>> fieldData = newList(map(new Transformer<VariableElement,Tuple3<String,String,Boolean>>() {
             @Override
             public Tuple3<String,String,Boolean> transform(VariableElement field) {
                 f.apply((fi.solita.utils.meta.generators.InstanceFieldsAsFunctions.Options) options, helper, field);
@@ -77,11 +76,11 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
                 
                 return Tuple.of(metaClassQualifiedName + "." + relevantTypeParamsString + simpleName.apply(field), f.fundef, f.needsToBeFunction);
             }
-        }));
+        }, fieldsToInclude));
       
         return concat(
-            Some("public static final " + typeParamsString + " " + tupleClass + "<" + mkString(",", map(fieldData, getType)) + ">" + " $Fields() { return " + Helpers.importType(Tuple.class) + ".of("),
-            Some(mkString(", ", map(fieldData, getInvokation.andThen(padding)))),
+            Some("public static final " + typeParamsString + " " + tupleClass + "<" + mkString(",", map(getType, fieldData)) + ">" + " $Fields() { return " + Helpers.importType(Tuple.class) + ".of("),
+            Some(mkString(", ", map(getInvokation.andThen(padding), fieldData))),
             Some("); }"),
             Some("")
         );

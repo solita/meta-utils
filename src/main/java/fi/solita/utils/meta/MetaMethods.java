@@ -1,8 +1,8 @@
 package fi.solita.utils.meta;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
-import fi.solita.utils.meta.generators.Content;
 import fi.solita.utils.functional.Function0;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function10;
@@ -37,7 +37,6 @@ import fi.solita.utils.functional.Tuple16;
 import fi.solita.utils.functional.Tuple17;
 import fi.solita.utils.functional.Tuple18;
 import fi.solita.utils.functional.Tuple19;
-import fi.solita.utils.functional.Tuple2;
 import fi.solita.utils.functional.Tuple20;
 import fi.solita.utils.functional.Tuple21;
 import fi.solita.utils.functional.Tuple22;
@@ -48,6 +47,7 @@ import fi.solita.utils.functional.Tuple6;
 import fi.solita.utils.functional.Tuple7;
 import fi.solita.utils.functional.Tuple8;
 import fi.solita.utils.functional.Tuple9;
+import fi.solita.utils.meta.generators.Content;
 
 public abstract class MetaMethods {
     static final Method doGetMember(Class<?> clazz, String name, Class<?>... argClasses) {
@@ -113,7 +113,7 @@ public abstract class MetaMethods {
             return doToString(clazz, name);
         }
     }
-    public static abstract class M2<T1,T2,R> extends Function2<T1,T2,R> implements MetaMethod<Tuple2<T1,T2>,R> {
+    public static abstract class M2<T1,T2,R> extends Function2<T1,T2,R> implements MetaMethod<Map.Entry<T1,T2>,R> {
         private transient Method $r;
         private final Class<?> clazz;
         private final String name;

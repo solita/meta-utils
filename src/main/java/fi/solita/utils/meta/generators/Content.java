@@ -11,15 +11,15 @@ import static fi.solita.utils.meta.Helpers.removeGenericPart;
 import static fi.solita.utils.meta.Helpers.resolveVisibility;
 import static fi.solita.utils.functional.Collections.newList;
 import static fi.solita.utils.functional.Functional.cons;
+import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.isEmpty;
+import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.repeat;
+import static fi.solita.utils.functional.Functional.sequence;
 import static fi.solita.utils.functional.Functional.transpose;
 import static fi.solita.utils.functional.FunctionalA.concat;
-import static fi.solita.utils.functional.FunctionalA.filter;
-import static fi.solita.utils.functional.FunctionalImpl.flatMap;
-import static fi.solita.utils.functional.FunctionalImpl.map;
-import static fi.solita.utils.functional.FunctionalImpl.sequence;
 import static fi.solita.utils.functional.Option.None;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.equalTo;
@@ -63,7 +63,7 @@ public abstract class Content {
     private static final Pattern typeArgArray = Pattern.compile("[^.\\[\\]]+((\\[\\])+)");
     
     public static final Iterable<String> reflectionInvokationArgs(Iterable<String> argumentClasses) {
-        return map(argumentClasses, new Transformer<String,String>() {
+        return map(new Transformer<String,String>() {
             @Override
             public String transform(String source) {
                 if (isPrimitive(arrayClass.matcher(source).replaceAll(""))) {
@@ -77,7 +77,7 @@ public abstract class Content {
                     return importTypes(source) + ".class";
                 }
             }
-        });
+        }, argumentClasses);
         
     }
     
@@ -99,7 +99,7 @@ public abstract class Content {
                 "      $r = (" + clsName + ")(" + importType(Object.class) + ")" + importTypes(removeGenericPart.apply(classNameGeneric)) + ".class." + declr + ";",
                 "      $r.setAccessible(true);"
                 ),
-            map(catchBlock, padding.andThen(padding)),
+            map(padding.andThen(padding), catchBlock),
             newList(
                 "    }",
                 "  }",
@@ -139,24 +139,24 @@ public abstract class Content {
                 // cannot refer to private classes
                 return Pair.of(newList(repeat(0l, generators.size())), Collections.<String>emptyList());
             }
-            List<Pair<Long, List<String>>> elemData = newList(sequence(generators, source));
+            List<Pair<Long, List<String>>> elemData = newList(sequence(source, generators));
             
             Iterable<TypeElement> nestedToProcess = element2NestedClasses.apply(source);
             if (options.onlyPublicMembers()) {
-                nestedToProcess = filter(nestedToProcess, publicElement);
+                nestedToProcess = filter(publicElement, nestedToProcess);
             }
-            List<Pair<List<Long>, List<String>>> nestedData = newList(map(filter(nestedToProcess, predicate), withNestedClasses.ap(options, generatedClassNamePattern, predicate, generators)));
+            List<Pair<List<Long>, List<String>>> nestedData = newList(map(withNestedClasses.ap(options, generatedClassNamePattern, predicate, generators), filter(predicate, nestedToProcess)));
             
-            Iterable<Long> generatorTimesForContent = map(elemData, Helpers.<Long>left());
-            Iterable<List<Long>> generatorTimesForNestedClasses = map(nestedData, Helpers.<List<Long>>left());
-            Iterable<String> elemContents = flatMap(elemData, Helpers.<List<String>>right());
-            Iterable<String> nestedContents = flatMap(nestedData, Helpers.<List<String>>right());
+            Iterable<Long> generatorTimesForContent = map(Helpers.<Long>left(), elemData);
+            Iterable<List<Long>> generatorTimesForNestedClasses = map(Helpers.<List<Long>>left(), nestedData);
+            Iterable<String> elemContents = flatMap(Helpers.<List<String>>right(), elemData);
+            Iterable<String> nestedContents = flatMap(Helpers.<List<String>>right(), nestedData);
             
-            List<Long> totalTimesPerGenerator = newList(map(transpose(cons(generatorTimesForContent, generatorTimesForNestedClasses)), Helpers.iterableSum));
+            List<Long> totalTimesPerGenerator = newList(map(Helpers.iterableSum, transpose(cons(generatorTimesForContent, generatorTimesForNestedClasses))));
             
             Iterable<String> warnings = source.getAnnotation(SuppressWarnings.class) == null
                 ? Collections.<String>emptyList()
-                : filter(source.getAnnotation(SuppressWarnings.class).value(), not(equalTo("unused")));
+                : filter(not(equalTo("unused")), source.getAnnotation(SuppressWarnings.class).value());
             
             List<String> allContents = newList(concat(
                           isEmpty(warnings)
@@ -167,7 +167,7 @@ public abstract class Content {
                               : Some("@Deprecated"),
                           Some(resolveVisibility(source) + "static final class " + generatedClassNamePattern.replace("{}", source.getSimpleName().toString()) + " implements " + Serializable.class.getName() + " {"),
                           elemContents,
-                          map(nestedContents, padding),
+                          map(padding, nestedContents),
                           Some("}")));
             return Pair.of(totalTimesPerGenerator, allContents);
         }
