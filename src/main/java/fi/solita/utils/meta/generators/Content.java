@@ -6,6 +6,7 @@ import static fi.solita.utils.meta.Helpers.importTypes;
 import static fi.solita.utils.meta.Helpers.isPrimitive;
 import static fi.solita.utils.meta.Helpers.isPrivate;
 import static fi.solita.utils.meta.Helpers.padding;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.removeGenericPart;
 import static fi.solita.utils.meta.Helpers.resolveVisibility;
@@ -144,6 +145,8 @@ public abstract class Content {
             Iterable<TypeElement> nestedToProcess = element2NestedClasses.apply(source);
             if (options.onlyPublicMembers()) {
                 nestedToProcess = filter(publicElement, nestedToProcess);
+            } else if (!options.includePrivateMembers()) {
+                nestedToProcess = filter(not(privateElement), nestedToProcess);
             }
             List<Pair<List<Long>, List<String>>> nestedData = newList(map(withNestedClasses.ap(options, generatedClassNamePattern, predicate, generators), filter(predicate, nestedToProcess)));
             

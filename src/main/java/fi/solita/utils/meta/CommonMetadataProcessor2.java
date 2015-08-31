@@ -13,6 +13,7 @@ import javax.lang.model.SourceVersion;
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.includesRegex,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.excludesRegex,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.onlyPublicMembers,
+                   "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.includePrivateMembers,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.includesAnnotation,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.excludesAnnotation})
 public class CommonMetadataProcessor2 extends CommonMetadataProcessor<CommonMetadataProcessor.CombinedGeneratorOptions> {

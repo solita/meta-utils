@@ -31,6 +31,7 @@ import static fi.solita.utils.meta.Helpers.isPrivate;
 import static fi.solita.utils.meta.Helpers.joinWithSpace;
 import static fi.solita.utils.meta.Helpers.parameterTypesAsClasses;
 import static fi.solita.utils.meta.Helpers.paramsWithCast;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.relevantTypeParams;
@@ -80,6 +81,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
         boolean generateMemberAccessorForMethods();
         boolean generateMemberNameAccessorForMethods();
         boolean onlyPublicMembers();
+        boolean includePrivateMembers();
     }
     
     public static final MethodsAsFunctions instance = new MethodsAsFunctions();
@@ -89,11 +91,15 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
         Iterable<ExecutableElement> elements = element2Methods.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
+        } else if (!options.includePrivateMembers()) {
+            elements = filter(not(privateElement), elements);
         }
         
         Iterable<VariableElement> processedFields = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
             processedFields = filter(publicElement, processedFields);
+        } else if (!options.includePrivateMembers()) {
+            processedFields = filter(not(privateElement), processedFields);
         }
         processedFields = filter(not(staticElements), processedFields);
       

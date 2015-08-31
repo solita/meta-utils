@@ -8,6 +8,7 @@ import static fi.solita.utils.meta.Helpers.importTypes;
 import static fi.solita.utils.meta.Helpers.isFinal;
 import static fi.solita.utils.meta.Helpers.isPrivate;
 import static fi.solita.utils.meta.Helpers.padding;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.resolveBoxedGenericType;
@@ -61,6 +62,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
         boolean generateMemberNameAccessorForFields();
         boolean makeFieldsPublic();
         boolean onlyPublicMembers();
+        boolean includePrivateMembers();
     }
     
     @Override
@@ -68,6 +70,8 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
         Iterable<VariableElement> elements = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
+        } else if (!options.includePrivateMembers()) {
+            elements = filter(not(privateElement), elements);
         }
       
         return flatMap(variableElementGen.ap(options, new Helpers.EnvDependent(processingEnv)), filter(not(staticElements), elements));

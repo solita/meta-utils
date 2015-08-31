@@ -2,6 +2,7 @@ package fi.solita.utils.meta.generators;
 
 import static fi.solita.utils.meta.Helpers.getPackageName;
 import static fi.solita.utils.meta.Helpers.padding;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.simpleName;
@@ -37,6 +38,7 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
     
     public static interface Options extends GeneratorOptions {
         boolean onlyPublicMembers();
+        boolean includePrivateMembers();
         @SuppressWarnings("rawtypes")
         Class<? extends Apply> getClassForInstanceFields(boolean isFinal);
         @SuppressWarnings("rawtypes")
@@ -51,6 +53,8 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         Iterable<VariableElement> elements = Helpers.element2Fields.apply(enclosingElement);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
+        } else if (!options.includePrivateMembers()) {
+            elements = filter(not(privateElement), elements);
         }
         
         List<VariableElement> fieldsToInclude = newList(filter(not(staticElements), elements));

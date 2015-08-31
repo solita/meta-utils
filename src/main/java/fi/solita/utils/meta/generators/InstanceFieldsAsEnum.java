@@ -2,6 +2,7 @@ package fi.solita.utils.meta.generators;
 
 import static fi.solita.utils.meta.Helpers.element2Fields;
 import static fi.solita.utils.meta.Helpers.padding;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.simpleName;
 import static fi.solita.utils.meta.Helpers.staticElements;
@@ -26,6 +27,7 @@ public class InstanceFieldsAsEnum extends Generator<InstanceFieldsAsEnum.Options
     
     public static interface Options extends GeneratorOptions {
         boolean onlyPublicMembers();
+        boolean includePrivateMembers();
     }
     
     @Override
@@ -33,6 +35,8 @@ public class InstanceFieldsAsEnum extends Generator<InstanceFieldsAsEnum.Options
         Iterable<VariableElement> elements = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
+        } else if (!options.includePrivateMembers()) {
+            elements = filter(not(privateElement), elements);
         }
       
         List<VariableElement> fieldsToInclude = newList(filter(not(staticElements), elements));

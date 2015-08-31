@@ -6,6 +6,7 @@ import static fi.solita.utils.meta.Helpers.getPackageName;
 import static fi.solita.utils.meta.Helpers.nanosToMillis;
 import static fi.solita.utils.meta.Helpers.nonGeneratedElements;
 import static fi.solita.utils.meta.Helpers.padding;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.removeGenericPart;
@@ -68,6 +69,7 @@ import fi.solita.utils.functional.Transformer;
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includesRegex,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesRegex,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.onlyPublicMembers,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includePrivateMembers,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includesAnnotation,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesAnnotation})
 public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.CombinedGeneratorOptions> extends AbstractProcessor {
@@ -81,6 +83,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         public static final String includesRegex = "includesRegex";
         public static final String excludesRegex = "excludesRegex";
         public static final String onlyPublicMembers = "onlyPublicMembers";
+        public static final String includePrivateMembers = "includePrivateMembers";
         public static final String includesAnnotation = "includesAnnotation";
         public static final String excludesAnnotation = "excludesAnnotation";
     }
@@ -95,6 +98,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public Pattern includesRegex()            { return Pattern.compile(findOption(Options.includesRegex, ".*")); }
     public Pattern excludesRegex()            { return Pattern.compile(findOption(Options.excludesRegex, "")); }
     public boolean onlyPublicMembers()        { return Boolean.parseBoolean(findOption(Options.onlyPublicMembers, "false")); }
+    public boolean includePrivateMembers()    { return Boolean.parseBoolean(findOption(Options.includePrivateMembers, "false")); }
     public String generatedClassNamePattern() { return findOption(Options.generatedClassNamePattern, "{}_"); }
     public String generatedPackagePattern()   { return findOption(Options.generatedPackagePattern, "{}"); }
     public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
@@ -122,11 +126,16 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     @SuppressWarnings("unchecked")
     public OPTIONS generatorOptions() {
         final boolean onlyPublicMembers = CommonMetadataProcessor.this.onlyPublicMembers();
+        final boolean includePrivateMembers = CommonMetadataProcessor.this.includePrivateMembers();
         final String generatedPackagePattern = CommonMetadataProcessor.this.generatedPackagePattern();
         final String generatedClassNamePattern = CommonMetadataProcessor.this.generatedClassNamePattern();
         return (OPTIONS) new CombinedGeneratorOptions() {
             public boolean onlyPublicMembers() {
                 return onlyPublicMembers;
+            }
+            @Override
+            public boolean includePrivateMembers() {
+                return includePrivateMembers;
             }
             public String generatedPackagePattern() {
                 return generatedPackagePattern;
@@ -211,6 +220,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 Iterable<TypeElement> nestedToProcess = element2NestedClasses.apply(element);
                 if (options.onlyPublicMembers()) {
                     nestedToProcess = newList(filter(publicElement, nestedToProcess));
+                } else if (!options.includePrivateMembers()) {
+                    nestedToProcess = filter(not(privateElement), nestedToProcess);
                 }
                 List<Pair<List<Long>, List<String>>> nestedData = newList(map(nestedDataProducer, filter(Predicate.of(Function.<Element,Boolean>constant(true)), nestedToProcess)));
                 long time3 = System.nanoTime();

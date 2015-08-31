@@ -11,6 +11,7 @@ import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.Functional.zipWithIndex;
 import static fi.solita.utils.functional.Option.Some;
+import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.boxedQualifiedName;
 import static fi.solita.utils.meta.Helpers.element2Constructors;
 import static fi.solita.utils.meta.Helpers.elementGenericQualifiedName;
@@ -23,6 +24,7 @@ import static fi.solita.utils.meta.Helpers.padding;
 import static fi.solita.utils.meta.Helpers.parameterTypesAsClasses;
 import static fi.solita.utils.meta.Helpers.paramsWithCast;
 import static fi.solita.utils.meta.Helpers.publicElement;
+import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.relevantTypeParams;
 import static fi.solita.utils.meta.Helpers.resolveVisibility;
@@ -58,6 +60,7 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
         boolean generateMemberInitializerForConstructors();
         boolean generateMemberAccessorForConstructors();
         boolean onlyPublicMembers();
+        boolean includePrivateMembers();
     }
     
     public static ConstructorsAsFunctions instance = new ConstructorsAsFunctions();
@@ -71,6 +74,8 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
         Iterable<ExecutableElement> elements = element2Constructors.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
+        } else if (!options.includePrivateMembers()) {
+            elements = filter(not(privateElement), elements);
         }
         
         Function1<Entry<Integer, ExecutableElement>, Iterable<String>> singleElementTransformer = constructorGen.ap(new Helpers.EnvDependent(processingEnv), options);

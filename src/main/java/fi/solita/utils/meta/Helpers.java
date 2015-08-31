@@ -433,6 +433,13 @@ public abstract class Helpers {
             return candidate.getModifiers().contains(Modifier.PUBLIC);
         }
     };
+    
+    public static final Predicate<Element> privateElement = new Predicate<Element>() {
+        @Override
+        public boolean accept(Element candidate) {
+            return candidate.getModifiers().contains(Modifier.PRIVATE);
+        }
+    };
 
     public static final boolean isPrivate(Element e) {
         return e.getModifiers().contains(Modifier.PRIVATE);
