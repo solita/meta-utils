@@ -1,5 +1,21 @@
 package fi.solita.utils.meta;
 
+import static fi.solita.utils.functional.Collections.emptyList;
+import static fi.solita.utils.functional.Collections.newArray;
+import static fi.solita.utils.functional.Collections.newList;
+import static fi.solita.utils.functional.Functional.concat;
+import static fi.solita.utils.functional.Functional.cons;
+import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatMap;
+import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.mkString;
+import static fi.solita.utils.functional.Functional.sequence;
+import static fi.solita.utils.functional.Functional.transpose;
+import static fi.solita.utils.functional.FunctionalA.map;
+import static fi.solita.utils.functional.FunctionalM.find;
+import static fi.solita.utils.functional.Option.Some;
+import static fi.solita.utils.functional.Predicates.matches;
+import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.element2NestedClasses;
 import static fi.solita.utils.meta.Helpers.equalTo;
 import static fi.solita.utils.meta.Helpers.getPackageName;
@@ -12,21 +28,6 @@ import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.removeGenericPart;
 import static fi.solita.utils.meta.Helpers.simpleName;
 import static fi.solita.utils.meta.Helpers.withAnnotations;
-import static fi.solita.utils.functional.Collections.emptyList;
-import static fi.solita.utils.functional.Collections.newArray;
-import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Functional.concat;
-import static fi.solita.utils.functional.Functional.cons;
-import static fi.solita.utils.functional.Functional.filter;
-import static fi.solita.utils.functional.Functional.find;
-import static fi.solita.utils.functional.Functional.flatMap;
-import static fi.solita.utils.functional.Functional.map;
-import static fi.solita.utils.functional.Functional.mkString;
-import static fi.solita.utils.functional.Functional.sequence;
-import static fi.solita.utils.functional.Functional.transpose;
-import static fi.solita.utils.functional.Option.Some;
-import static fi.solita.utils.functional.Predicates.matches;
-import static fi.solita.utils.functional.Predicates.not;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,20 +40,11 @@ import javax.annotation.processing.Filer;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import fi.solita.utils.meta.generators.ConstructorsAsFunctions;
-import fi.solita.utils.meta.generators.Content;
-import fi.solita.utils.meta.generators.Generator;
-import fi.solita.utils.meta.generators.InstanceFieldsAsEnum;
-import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
-import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
-import fi.solita.utils.meta.generators.MethodsAsFunctions;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function;
 import fi.solita.utils.functional.Function1;
@@ -60,9 +52,15 @@ import fi.solita.utils.functional.Option;
 import fi.solita.utils.functional.Pair;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
+import fi.solita.utils.meta.generators.ConstructorsAsFunctions;
+import fi.solita.utils.meta.generators.Content;
+import fi.solita.utils.meta.generators.Generator;
+import fi.solita.utils.meta.generators.InstanceFieldsAsEnum;
+import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
+import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
+import fi.solita.utils.meta.generators.MethodsAsFunctions;
 
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedOptions({"CommonMetadataProcessor." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.generatedClassNamePattern,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.generatedPackagePattern,

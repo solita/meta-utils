@@ -2,11 +2,8 @@ package fi.solita.utils.meta;
 
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
 @SupportedOptions({"CommonMetadataProcessor3." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.generatedClassNamePattern,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.generatedPackagePattern,
