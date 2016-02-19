@@ -651,7 +651,7 @@ public abstract class Helpers {
         }
     };
     
-    public static final <T> Set<Name> allUsedTypeParameters(ExecutableElement e) {
+    public static final Set<Name> allUsedTypeParameters(ExecutableElement e) {
         return new TV().visit(e.asType(), Collections.<Name>newSet());
     }
     

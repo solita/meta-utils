@@ -11,7 +11,6 @@ import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.sequence;
 import static fi.solita.utils.functional.Functional.transpose;
-import static fi.solita.utils.functional.FunctionalA.map;
 import static fi.solita.utils.functional.FunctionalM.find;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.matches;
@@ -176,14 +175,14 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         }
         
         try {
-            return doProcess(annotations, roundEnv);
+            return doProcess(roundEnv);
         } catch (RuntimeException e) {
             processingEnv.getMessager().printMessage(Kind.ERROR, e.toString());
             throw e;
         }
     }
     
-    public boolean doProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public boolean doProcess(RoundEnvironment roundEnv) {
         OPTIONS options = generatorOptions();
         List<Apply<TypeElement,Iterable<String>>> generators = newList();
         for (Generator<? super OPTIONS> g: generators()) {
@@ -313,6 +312,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 20: return MetaMethods.M20.class;
                 case 21: return MetaMethods.M21.class;
                 case 22: return MetaMethods.M22.class;
+                case 23: return MetaMethods.M23.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
@@ -348,6 +348,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 20: return MetaConstructors.C20.class;
                 case 21: return MetaConstructors.C21.class;
                 case 22: return MetaConstructors.C22.class;
+                case 23: return MetaConstructors.C23.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }

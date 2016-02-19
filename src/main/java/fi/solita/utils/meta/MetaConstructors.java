@@ -25,6 +25,7 @@ import fi.solita.utils.functional.Function2;
 import fi.solita.utils.functional.Function20;
 import fi.solita.utils.functional.Function21;
 import fi.solita.utils.functional.Function22;
+import fi.solita.utils.functional.Function23;
 import fi.solita.utils.functional.Function3;
 import fi.solita.utils.functional.Function4;
 import fi.solita.utils.functional.Function5;
@@ -47,6 +48,7 @@ import fi.solita.utils.functional.Tuple19;
 import fi.solita.utils.functional.Tuple20;
 import fi.solita.utils.functional.Tuple21;
 import fi.solita.utils.functional.Tuple22;
+import fi.solita.utils.functional.Tuple23;
 import fi.solita.utils.functional.Tuple3;
 import fi.solita.utils.functional.Tuple4;
 import fi.solita.utils.functional.Tuple5;
@@ -609,6 +611,30 @@ public abstract class MetaConstructors {
         private final Class<?> clazz;
         private final Class<?>[] argClasses;
         public C22(Class<?> clazz, Class<?>... argClasses) {
+            this.clazz = clazz;
+            this.argClasses = argClasses;
+        }
+        @Override
+        public List<Class<?>> getConstructorParameterTypes() {
+            return Collections.unmodifiableList(Arrays.asList(argClasses));
+        }
+        @Override
+        public Constructor<R> getMember() {
+            if ($r == null) {
+                $r = doGetMember(clazz, argClasses);
+            }
+            return $r;
+        }
+        @Override
+        public String toString() {
+            return doToString(clazz, argClasses);
+        }
+    }
+    public static abstract class C23<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,R> extends Function23<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,R> implements MetaConstructor<Tuple23<? extends T1,? extends T2,? extends T3,? extends T4,? extends T5,? extends T6,? extends T7,? extends T8,? extends T9,? extends T10,? extends T11,? extends T12,? extends T13,? extends T14,? extends T15,? extends T16,? extends T17,? extends T18,? extends T19,? extends T20,? extends T21,? extends T22,? extends T23>,R> {
+        private transient Constructor<R> $r;
+        private final Class<?> clazz;
+        private final Class<?>[] argClasses;
+        public C23(Class<?> clazz, Class<?>... argClasses) {
             this.clazz = clazz;
             this.argClasses = argClasses;
         }
