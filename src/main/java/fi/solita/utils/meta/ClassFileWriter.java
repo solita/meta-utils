@@ -38,14 +38,16 @@ public class ClassFileWriter {
         for (String line: contentLines) {
             Matcher m = IMPORTS.matcher(line);
             while (m.find()) {
-                String qualifiedName = takeWhile(not(equalTo('$')), m.group(1));
-                String simpleName = m.group(3).replaceAll("[$]", ".");
+                String fullyQualifiedName = m.group(1).replaceAll("[$]", ".");
+                String importClauseName = takeWhile(not(equalTo('$')), m.group(1));
+                String simpleName = takeWhile(not(equalTo('$')), m.group(3));
+                String importName = m.group(3).replaceAll("[$]", ".");
                 String alreadyImported = toImport.get(simpleName);
-                if (alreadyImported == null || alreadyImported.equals(qualifiedName)) {
-                    toImport.put(simpleName, qualifiedName);
-                    m.appendReplacement(content, simpleName);
+                if (alreadyImported == null || alreadyImported.equals(importClauseName)) {
+                    toImport.put(simpleName, importClauseName);
+                    m.appendReplacement(content, importName);
                 } else {
-                    m.appendReplacement(content, qualifiedName);
+                    m.appendReplacement(content, fullyQualifiedName);
                 }
             }
             m.appendTail(content);
