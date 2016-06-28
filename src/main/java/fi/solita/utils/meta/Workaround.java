@@ -22,12 +22,14 @@ public class Workaround {
     }
     
     public static List<? extends Element> getEnclosedElementsDeclarationOrder(Element type) {
-        if (sourceTypeBinding == null) {
-            // not eclipse, skip workaround
-            return type.getEnclosedElements();
-        }
         try {
-            Object binding = field(type, "_binding");
+            Object binding;
+            try {
+                binding = field(type, "_binding");
+            } catch (NoSuchFieldException e) {
+                // not eclipse, skip workaround
+                return type.getEnclosedElements();
+            }
 
             final List<Object> declarationOrder;
             if (sourceTypeBinding.isAssignableFrom(binding.getClass())) {
