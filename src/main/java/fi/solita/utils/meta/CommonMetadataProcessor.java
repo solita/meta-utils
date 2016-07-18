@@ -313,6 +313,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 21: return MetaMethods.M21.class;
                 case 22: return MetaMethods.M22.class;
                 case 23: return MetaMethods.M23.class;
+                case 24: return MetaMethods.M24.class;
+                case 25: return MetaMethods.M25.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
@@ -349,6 +351,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 21: return MetaConstructors.C21.class;
                 case 22: return MetaConstructors.C22.class;
                 case 23: return MetaConstructors.C23.class;
+                case 24: return MetaConstructors.C24.class;
+                case 25: return MetaConstructors.C25.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
