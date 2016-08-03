@@ -30,6 +30,10 @@ public class Workaround {
                 // not eclipse, skip workaround
                 return type.getEnclosedElements();
             }
+            
+            if (sourceTypeBinding == null) {
+                return type.getEnclosedElements();
+            }
 
             final List<Object> declarationOrder;
             if (sourceTypeBinding.isAssignableFrom(binding.getClass())) {
