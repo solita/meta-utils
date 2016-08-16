@@ -17,6 +17,11 @@ public abstract class MetaMethodPredicate<T> extends Predicate<T> implements Met
     }
     
     @Override
+    public boolean accept(T candidate) {
+        return apply(candidate);
+    }
+    
+    @Override
     public final Method getMember() {
         if ($r == null) {
             $r = MetaMethods.doGetMember(clazz, name, argClasses);

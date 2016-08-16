@@ -172,7 +172,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
                 Iterable<String> implementedMethodArgTypes = handleAsInstanceMethod ? cons(enclosingElementGenericQualifiedName, argTypes) : argTypes;
                 Iterable<String> privateImplementedMethodArgTypes  = map(removeGenericPart.andThen(replaceTypeVarWithObject), handleAsInstanceMethod ? cons(enclosingElementQualifiedName, argTypes) : argTypes);
     
-                String implementedMethod = Predicate.class.isAssignableFrom(methodClass) ? "boolean accept" : (optimize ? "Object" : returnTypeImported) + " apply";
+                String implementedMethod = Predicate.class.isAssignableFrom(methodClass) ? "Boolean apply" : (optimize ? "Object" : returnTypeImported) + " apply";
                 String fundef = importType(methodClass) + "<" + importTypes(mkString(", ", usePredicate ? implementedMethodArgTypes : concat(implementedMethodArgTypes, newSet(returnType)))) + "> ";
                 String privateFundef = importType(methodClass) + "<" + importTypes(mkString(", ", usePredicate ? privateImplementedMethodArgTypes : concat(privateImplementedMethodArgTypes, newSet("Object")))) + "> ";
                 

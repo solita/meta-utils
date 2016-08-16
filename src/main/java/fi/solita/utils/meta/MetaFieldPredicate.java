@@ -16,6 +16,11 @@ public abstract class MetaFieldPredicate<T> extends Predicate<T> implements Meta
     }
     
     @Override
+    public boolean accept(T candidate) {
+        return apply(candidate);
+    }
+    
+    @Override
     public final Field getMember() {
         if ($r == null) {
             try {

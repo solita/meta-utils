@@ -16,6 +16,11 @@ public abstract class MetaFieldPredicateProperty<T> extends Predicate<T> impleme
     }
     
     @Override
+    public boolean accept(T candidate) {
+        return apply(candidate);
+    }
+    
+    @Override
     public final Field getMember() {
         if ($r == null) {
             try {

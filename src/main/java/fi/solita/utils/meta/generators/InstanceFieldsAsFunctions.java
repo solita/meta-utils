@@ -152,7 +152,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             String declaration = modifiers + " " + (needsToBeFunction ? relevantTypeParamsString + " ": "") + fundef + " " + fieldName;
             String privateDeclaration = "private static final " + fieldClassImported + " $" + fieldName;
             String setterFundef = importType(Function1.class) + "<" + (needsToBeFunction ? "Object" : returnTypeImported) + ",Void>";
-            String implementedMethod = Predicate.class.isAssignableFrom(fieldClass) ? "boolean accept" : (needsToBeFunction ? "Object" : returnTypeImported) + " apply";
+            String implementedMethod = Predicate.class.isAssignableFrom(fieldClass) ? "Boolean apply" : (needsToBeFunction ? "Object" : returnTypeImported) + " apply";
 
             Iterable<String> tryBlock = isPrivate
                 ? Some(returnClause + "getMember().get($self);")
