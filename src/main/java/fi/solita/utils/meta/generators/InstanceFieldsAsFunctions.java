@@ -142,7 +142,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             String modifiers = visibility + "static final";
             String fieldName = field.getSimpleName().toString();
             
-            final String returnClause = "return " + (isPrivate ? "(" + (needsToBeFunction ? "Object" : returnTypeImported) + ")" : "");
+            final String returnClause = "return $self == null ? null : " + (isPrivate ? "(" + (needsToBeFunction ? "Object" : returnTypeImported) + ")" : "");
             
             boolean usePredicate = returnType.equals(Boolean.class.getName()) || returnType.equals(boolean.class.getName());
             Class<?> fieldClass = usePredicate ? options.getPredicateClassForInstanceFields(isFinal) : options.getClassForInstanceFields(isFinal);

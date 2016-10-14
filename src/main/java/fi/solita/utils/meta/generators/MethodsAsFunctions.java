@@ -164,7 +164,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
                 //boolean hasPlainGenericArguments = exists(map(argTypes, removeGenericPart), not(contains('.')));
                 boolean optimize = false; // skipped, since javac compiler starts to complain about ambiguous methods in some cases... // needsToBeFunction && !hasPlainGenericArguments;
                 
-                String returnClause = returnsVoid ? "" : "return " + (isPrivate && !optimize ? "(" + returnTypeImported + ")" : "");
+                String returnClause = returnsVoid ? "" : "return " + (isInstanceMethod ? " $self == null ? null : " : "") + (isPrivate && !optimize ? "(" + returnTypeImported + ")" : "");
     
                 boolean usePredicate = !handleAsInstanceMethod && argCount == 1 && (returnType.equals("java.lang.Boolean") || returnType.equals("boolean"));
                 Class<?> methodClass = usePredicate ? options.getPredicateClassForMethods() : options.getClassForMethods(argCount + (handleAsInstanceMethod ? 1 : 0));
