@@ -18,6 +18,8 @@ public class Workaround {
             sourceTypeBinding = Class.forName("org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding");
         } catch (ClassNotFoundException e) {
             // ignore
+        } catch (UnsupportedClassVersionError e) {
+            // ignore. Idea throws this for including an eclipse-compiler to the classpath, for what-ever reason.
         }
     }
     
