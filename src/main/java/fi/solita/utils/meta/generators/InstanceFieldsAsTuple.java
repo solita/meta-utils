@@ -30,6 +30,7 @@ import fi.solita.utils.meta.Helpers.EnvDependent;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Transformer;
 import fi.solita.utils.functional.Tuple;
+import fi.solita.utils.functional.Tuple0;
 import fi.solita.utils.functional.Tuple3;
 
 public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Options>{
@@ -58,7 +59,7 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         }
         
         List<VariableElement> fieldsToInclude = newList(filter(not(staticElements), elements));
-        if (fieldsToInclude.isEmpty() || fieldsToInclude.size() > Tuple.class.getDeclaredClasses().length) {
+        if (fieldsToInclude.size() > Tuple.class.getDeclaredClasses().length) {
             return emptyList();
         }
         
@@ -83,7 +84,7 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         }, fieldsToInclude));
       
         return concat(
-            Some("public static final " + typeParamsString + " " + tupleClass + "<" + mkString(",", map(getType, fieldData)) + ">" + " $Fields() { return " + Helpers.importType(Tuple.class) + ".of("),
+            Some("public static " + typeParamsString + " " + tupleClass + (fieldData.isEmpty() ? "" : "<" + mkString(",", map(getType, fieldData)) + ">") + " $Fields() { return " + Helpers.importType(Tuple.class) + ".of("),
             Some(mkString(", ", map(getInvokation.andThen(padding), fieldData))),
             Some("); }"),
             Some("")
