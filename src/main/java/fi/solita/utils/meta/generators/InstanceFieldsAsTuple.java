@@ -30,7 +30,6 @@ import fi.solita.utils.meta.Helpers.EnvDependent;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Transformer;
 import fi.solita.utils.functional.Tuple;
-import fi.solita.utils.functional.Tuple0;
 import fi.solita.utils.functional.Tuple3;
 
 public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Options>{
