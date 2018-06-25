@@ -44,6 +44,7 @@ import fi.solita.utils.meta.Helpers;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function3;
+import fi.solita.utils.functional.Pair;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
 import fi.solita.utils.functional.Tuple2;
@@ -105,7 +106,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             Iterable<String> allTypeParams = map(typeParameter2String, enclosingElement.getTypeParameters());
             List<String> allTypeParamsWithoutConstraints = newList(map(simpleName, enclosingElement.getTypeParameters()));
             final String rett = ("." + returnType + ".");
-            List<Tuple2<String, String>> relevantTypeParamPairs = newList(filter(new Predicate<Tuple2<String,String>>() {
+            List<Pair<String, String>> relevantTypeParamPairs = newList(filter(new Predicate<Tuple2<String,String>>() {
                 @Override
                 public boolean accept(Tuple2<String,String> candidate) {
                     return rett.matches(".*[^a-zA-Z0-9_]" + Pattern.quote(candidate._2.toString()) + "[^a-zA-Z0-9_].*");

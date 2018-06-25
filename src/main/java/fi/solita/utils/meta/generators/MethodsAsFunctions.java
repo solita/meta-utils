@@ -65,9 +65,9 @@ import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function4;
 import fi.solita.utils.functional.Functional;
+import fi.solita.utils.functional.Pair;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
-import fi.solita.utils.functional.Tuple2;
 import fi.solita.utils.meta.Helpers;
 
 public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
@@ -240,9 +240,9 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
         }
     };
     
-    public static final Function1<Iterable<ExecutableElement>, Iterable<Tuple2<Integer,ExecutableElement>>> zipWithIndex = new Function1<Iterable<ExecutableElement>, Iterable<Tuple2<Integer,ExecutableElement>>>() {
+    public static final Function1<Iterable<ExecutableElement>, Iterable<Pair<Integer,ExecutableElement>>> zipWithIndex = new Function1<Iterable<ExecutableElement>, Iterable<Pair<Integer,ExecutableElement>>>() {
         @Override
-        public Iterable<Tuple2<Integer, ExecutableElement>> apply(Iterable<ExecutableElement> t) {
+        public Iterable<Pair<Integer, ExecutableElement>> apply(Iterable<ExecutableElement> t) {
             return Functional.zipWithIndex(t);
         }
     };
