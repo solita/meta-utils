@@ -28,6 +28,8 @@ import fi.solita.utils.functional.Function28;
 import fi.solita.utils.functional.Function29;
 import fi.solita.utils.functional.Function3;
 import fi.solita.utils.functional.Function30;
+import fi.solita.utils.functional.Function31;
+import fi.solita.utils.functional.Function32;
 import fi.solita.utils.functional.Function4;
 import fi.solita.utils.functional.Function5;
 import fi.solita.utils.functional.Function6;
@@ -57,6 +59,8 @@ import fi.solita.utils.functional.Tuple28;
 import fi.solita.utils.functional.Tuple29;
 import fi.solita.utils.functional.Tuple3;
 import fi.solita.utils.functional.Tuple30;
+import fi.solita.utils.functional.Tuple31;
+import fi.solita.utils.functional.Tuple32;
 import fi.solita.utils.functional.Tuple4;
 import fi.solita.utils.functional.Tuple5;
 import fi.solita.utils.functional.Tuple6;
@@ -839,6 +843,58 @@ public abstract class MetaMethods {
         private final String name;
         private final Class<?>[] argClasses;
         public M30(Class<?> clazz, String name, Class<?>... argClasses) {
+            this.clazz = clazz;
+            this.name = name;
+            this.argClasses = argClasses;
+        }
+        @Override
+        public final Method getMember() {
+            if ($r == null) {
+                $r = doGetMember(clazz, name, argClasses);
+            }
+            return $r;
+        }
+        public final String getName() {
+            return name;
+        }
+        @Override
+        public final String toString() {
+            return doToString(clazz, name);
+        }
+    }
+    
+    public static abstract class M31<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,R> extends Function31<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,R> implements MetaMethod<Tuple31<? extends T1,? extends T2,? extends T3,? extends T4,? extends T5,? extends T6,? extends T7,? extends T8,? extends T9,? extends T10,? extends T11,? extends T12,? extends T13,? extends T14,? extends T15,? extends T16,? extends T17,? extends T18,? extends T19,? extends T20,? extends T21,? extends T22,? extends T23,? extends T24,? extends T25,? extends T26,? extends T27,? extends T28,? extends T29,? extends T30,? extends T31>,R> {
+        private transient Method $r;
+        private final Class<?> clazz;
+        private final String name;
+        private final Class<?>[] argClasses;
+        public M31(Class<?> clazz, String name, Class<?>... argClasses) {
+            this.clazz = clazz;
+            this.name = name;
+            this.argClasses = argClasses;
+        }
+        @Override
+        public final Method getMember() {
+            if ($r == null) {
+                $r = doGetMember(clazz, name, argClasses);
+            }
+            return $r;
+        }
+        public final String getName() {
+            return name;
+        }
+        @Override
+        public final String toString() {
+            return doToString(clazz, name);
+        }
+    }
+    
+    public static abstract class M32<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,T32,R> extends Function32<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,T32,R> implements MetaMethod<Tuple32<? extends T1,? extends T2,? extends T3,? extends T4,? extends T5,? extends T6,? extends T7,? extends T8,? extends T9,? extends T10,? extends T11,? extends T12,? extends T13,? extends T14,? extends T15,? extends T16,? extends T17,? extends T18,? extends T19,? extends T20,? extends T21,? extends T22,? extends T23,? extends T24,? extends T25,? extends T26,? extends T27,? extends T28,? extends T29,? extends T30,? extends T31,? extends T32>,R> {
+        private transient Method $r;
+        private final Class<?> clazz;
+        private final String name;
+        private final Class<?>[] argClasses;
+        public M32(Class<?> clazz, String name, Class<?>... argClasses) {
             this.clazz = clazz;
             this.name = name;
             this.argClasses = argClasses;
