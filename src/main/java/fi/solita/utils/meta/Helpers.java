@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Generated;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -65,6 +64,20 @@ import fi.solita.utils.functional.Tuple2;
 
 public abstract class Helpers {
 
+    @SuppressWarnings("rawtypes")
+    public static Class GENERATED;
+    static {
+        try {
+            GENERATED = Class.forName("javax.annotation.processing.Generated");
+        } catch (ClassNotFoundException e) {
+            try {
+                GENERATED = Class.forName("javax.annotation.Generated");
+            } catch (ClassNotFoundException e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+    }
+    
     private static final Pattern qNameMatcher = Pattern.compile("([a-zA-Z0-9_]+\\.)+[a-zA-Z0-9_$]+");
     private static final String qNameReplacementString = Matcher.quoteReplacement("{${") + "$0" + Matcher.quoteReplacement("}$}");
     
@@ -404,7 +417,7 @@ public abstract class Helpers {
     public static final Predicate<Element> nonGeneratedElements = new Predicate<Element>() {
         @Override
         public boolean accept(Element candidate) {
-            return candidate.getAnnotation(Generated.class) == null;
+            return candidate.getAnnotation(Helpers.GENERATED) == null;
         }
     };
     

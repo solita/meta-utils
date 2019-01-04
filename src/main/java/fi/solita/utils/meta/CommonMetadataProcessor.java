@@ -99,7 +99,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public String generatedClassNamePattern() { return findOption(Options.generatedClassNamePattern, "{}_"); }
     public String generatedPackagePattern()   { return findOption(Options.generatedPackagePattern, "{}"); }
     public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
-    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
+    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList(Helpers.GENERATED.getName(), "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
     public Pattern extendClassNamePattern()   { return Pattern.compile("<not enabled>"); }
 
     public String findOption(String option, String defaultIfNotFound) {

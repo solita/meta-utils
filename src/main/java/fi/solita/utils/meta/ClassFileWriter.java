@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Generated;
 import javax.annotation.processing.Filer;
 import javax.lang.model.element.TypeElement;
 import javax.tools.FileObject;
@@ -26,12 +25,11 @@ public class ClassFileWriter {
     
     private static final Pattern IMPORTS = Pattern.compile(Pattern.quote("{${") + "(([a-zA-Z0-9_]+\\.)*([a-zA-Z0-9_$]+))" + Pattern.quote("}$}"));
     private static final String SERIALIZABLE = Serializable.class.getSimpleName();
-    private static final String GENERATED = Generated.class.getSimpleName();
     private static final String LINE_SEP = System.getProperty("line.separator");
     
     public static void writeClassFile(String packageName, String classSimpleName, Option<String> extendedClassName, Iterable<String> contentLines, Class<?> generator, Filer filer, TypeElement originalClass, Option<SuppressWarnings> classSupressWarnings, boolean isDeprecated) {
         Map<String,String> toImport = newMap();
-        toImport.put(GENERATED, "javax.annotation.Generated");
+        toImport.put(Helpers.GENERATED.getSimpleName(), Helpers.GENERATED.getName());
         toImport.put(SERIALIZABLE, "java.io.Serializable");
         
         StringBuffer content = new StringBuffer();
@@ -83,7 +81,7 @@ public class ClassFileWriter {
             }
             pw.append(LINE_SEP)
               .append('@')
-              .append(GENERATED)
+              .append(Helpers.GENERATED.getSimpleName())
               .append("(\"")
               .append(generator.getName())
               .append("\")")
