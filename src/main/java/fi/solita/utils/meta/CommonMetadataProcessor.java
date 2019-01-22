@@ -3,6 +3,7 @@ package fi.solita.utils.meta;
 import static fi.solita.utils.functional.Collections.emptyList;
 import static fi.solita.utils.functional.Collections.newArray;
 import static fi.solita.utils.functional.Collections.newList;
+import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.concat;
 import static fi.solita.utils.functional.Functional.cons;
 import static fi.solita.utils.functional.Functional.filter;
@@ -93,13 +94,13 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     
     public boolean enabled()                  { return Boolean.parseBoolean(findOption(Options.enabled, Boolean.toString(enabledByDefault()))); }
     public Pattern includesRegex()            { return Pattern.compile(findOption(Options.includesRegex, ".*")); }
-    public Pattern excludesRegex()            { return Pattern.compile(findOption(Options.excludesRegex, "")); }
+    public Pattern excludesRegex()            { return Pattern.compile(findOption(Options.excludesRegex, ".*_")); }
     public boolean onlyPublicMembers()        { return Boolean.parseBoolean(findOption(Options.onlyPublicMembers, "false")); }
     public boolean includePrivateMembers()    { return Boolean.parseBoolean(findOption(Options.includePrivateMembers, "false")); }
     public String generatedClassNamePattern() { return findOption(Options.generatedClassNamePattern, "{}_"); }
     public String generatedPackagePattern()   { return findOption(Options.generatedPackagePattern, "{}"); }
     public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
-    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList(Helpers.GENERATED.getName(), "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
+    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.annotation.processing.Generated", "javax.annotation.Generated", "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
     public Pattern extendClassNamePattern()   { return Pattern.compile("<not enabled>"); }
 
     public String findOption(String option, String defaultIfNotFound) {

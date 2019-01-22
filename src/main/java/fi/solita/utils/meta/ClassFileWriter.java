@@ -29,7 +29,6 @@ public class ClassFileWriter {
     
     public static void writeClassFile(String packageName, String classSimpleName, Option<String> extendedClassName, Iterable<String> contentLines, Class<?> generator, Filer filer, TypeElement originalClass, Option<SuppressWarnings> classSupressWarnings, boolean isDeprecated) {
         Map<String,String> toImport = newMap();
-        toImport.put(Helpers.GENERATED.getSimpleName(), Helpers.GENERATED.getName());
         toImport.put(SERIALIZABLE, "java.io.Serializable");
         
         StringBuffer content = new StringBuffer();
@@ -80,12 +79,6 @@ public class ClassFileWriter {
                   .append(LINE_SEP);
             }
             pw.append(LINE_SEP)
-              .append('@')
-              .append(Helpers.GENERATED.getSimpleName())
-              .append("(\"")
-              .append(generator.getName())
-              .append("\")")
-              .append(LINE_SEP)
               .append("@SuppressWarnings({\"" + mkString("\",\"", suppress) + "\"})")
               .append(LINE_SEP);
             if (isDeprecated) {
