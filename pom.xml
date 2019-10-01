@@ -36,7 +36,7 @@
         <dependency>
             <groupId>fi.solita.utils</groupId>
             <artifactId>functional-utils</artifactId>
-            <version>0.9.73</version>
+            <version>0.9.76</version>
             <scope>provided</scope>
         </dependency>
         
