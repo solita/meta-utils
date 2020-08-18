@@ -36,8 +36,7 @@
         <dependency>
             <groupId>fi.solita.utils</groupId>
             <artifactId>functional-utils</artifactId>
-            <version>0.9.76</version>
-            <scope>provided</scope>
+            <version>0.9.83</version>
         </dependency>
         
         <dependency>
@@ -47,4 +46,20 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    
+    <repositories>
+        <repository>
+          <id>github-functional-utils</id>
+          <name>GitHub Solita Apache Maven Packages</name>
+          <url>https://maven.pkg.github.com/solita/functional-utils</url>
+        </repository>
+    </respositories>
+    
+    <distributionManagement>
+       <repository>
+         <id>github</id>
+         <name>GitHub Solita Apache Maven Packages</name>
+         <url>https://maven.pkg.github.com/solita/meta-utils</url>
+       </repository>
+    </distributionManagement>
 </project>
