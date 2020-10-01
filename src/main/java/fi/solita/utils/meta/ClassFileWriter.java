@@ -1,10 +1,10 @@
 package fi.solita.utils.meta;
 
-import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Collections.newMap;
+import static fi.solita.utils.functional.Collections.newMutableList;
+import static fi.solita.utils.functional.Collections.newMutableMap;
 import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.mkString;
-import static fi.solita.utils.functional.Functional.takeWhile;
+import static fi.solita.utils.functional.FunctionalC.takeWhile;
 import static fi.solita.utils.functional.Predicates.equalTo;
 import static fi.solita.utils.functional.Predicates.not;
 
@@ -28,7 +28,7 @@ public class ClassFileWriter {
     private static final String LINE_SEP = System.getProperty("line.separator");
     
     public static void writeClassFile(String packageName, String classSimpleName, Option<String> extendedClassName, Iterable<String> contentLines, Class<?> generator, Filer filer, TypeElement originalClass, Option<SuppressWarnings> classSupressWarnings, boolean isDeprecated) {
-        Map<String,String> toImport = newMap();
+        Map<String,String> toImport = newMutableMap();
         toImport.put(SERIALIZABLE, "java.io.Serializable");
         
         StringBuffer content = new StringBuffer();
@@ -51,7 +51,7 @@ public class ClassFileWriter {
             content.append(LINE_SEP);
         }
         
-        List<String> suppress = newList();
+        List<String> suppress = newMutableList();
         for (SuppressWarnings sw: classSupressWarnings) {
             for (String sws: sw.value()) {
                 if (!"unused".equals(sws)) {

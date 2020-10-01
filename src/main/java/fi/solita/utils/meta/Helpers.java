@@ -1,7 +1,8 @@
 package fi.solita.utils.meta;
 
 import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Collections.newMap;
+import static fi.solita.utils.functional.Collections.newMutableMap;
+import static fi.solita.utils.functional.Collections.newMutableSet;
 import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.concat;
 import static fi.solita.utils.functional.Functional.exists;
@@ -571,7 +572,7 @@ public abstract class Helpers {
     //private static final Map<String,Pattern> patternCacheForUsedIn = newMap();
 
     private static final class TV extends AbstractTypeVisitor6<Set<Name>,Set<Name>> {
-        private Set<TypeMirror> visited = newSet();
+        private Set<TypeMirror> visited = newMutableSet();
         @Override
         public Set<Name> visitPrimitive(PrimitiveType t, Set<Name> p) {
             return p;
@@ -665,7 +666,7 @@ public abstract class Helpers {
     };
     
     public static final Set<Name> allUsedTypeParameters(ExecutableElement e) {
-        return new TV().visit(e.asType(), Collections.<Name>newSet());
+        return new TV().visit(e.asType(), Collections.<Name>newMutableSet());
     }
     
     /*public static final Predicate<TypeParameterElement> usedIn(final ExecutableElement e) {
@@ -734,7 +735,7 @@ public abstract class Helpers {
         return new Predicate<Element>() {
             @Override
             public boolean accept(final Element e) {
-                return acc(e, Collections.<Element>newSet());
+                return acc(e, Collections.<Element>newMutableSet());
             }
             
             private boolean acc(final Element e, final Set<Element> visited) {
@@ -819,7 +820,7 @@ public abstract class Helpers {
         };
     }
     
-    private static final Map<String,Pattern> patternCacheForTypeVariableReplacer = newMap();
+    private static final Map<String,Pattern> patternCacheForTypeVariableReplacer = newMutableMap();
 
     public static final Transformer<String, String> typeVariableReplacer(final List<String> toReplace) {
         return new Transformer<String,String>() {

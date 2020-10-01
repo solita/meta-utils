@@ -3,7 +3,7 @@ package fi.solita.utils.meta;
 import static fi.solita.utils.functional.Collections.emptyList;
 import static fi.solita.utils.functional.Collections.newArray;
 import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Collections.newSet;
+import static fi.solita.utils.functional.Collections.newMutableList;
 import static fi.solita.utils.functional.Functional.concat;
 import static fi.solita.utils.functional.Functional.cons;
 import static fi.solita.utils.functional.Functional.filter;
@@ -12,6 +12,7 @@ import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.sequence;
 import static fi.solita.utils.functional.Functional.transpose;
+import static fi.solita.utils.functional.FunctionalA.map;
 import static fi.solita.utils.functional.FunctionalM.find;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.matches;
@@ -185,7 +186,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     
     public boolean doProcess(RoundEnvironment roundEnv) {
         OPTIONS options = generatorOptions();
-        List<Apply<TypeElement,Iterable<String>>> generators = newList();
+        List<Apply<TypeElement,Iterable<String>>> generators = newMutableList();
         for (Generator<? super OPTIONS> g: generators()) {
             generators.add(g.ap(processingEnv, options));
         }
