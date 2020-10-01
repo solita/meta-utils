@@ -28,4 +28,4 @@ jobs:
     - name: Build with Maven
       run: mvn package
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ secrets.REPO_ACCESS }}
