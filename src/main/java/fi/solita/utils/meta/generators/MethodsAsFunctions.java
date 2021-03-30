@@ -204,7 +204,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
                     map(Helpers.padding, options.getAdditionalBodyLinesForMethods(method))
                 );
                 
-                String initParams = "(" + importTypes(enclosingElementQualifiedName) + ".class, " + mkString(", ", cons("\"" + methodName + (index == 0 ? "" : index) + "\"", reflectionInvokationArgs(parameterTypesAsClasses(method, relevantTypeParamsForMethod)))) + ")";
+                String initParams = "(" + importTypes(enclosingElementQualifiedName) + ".class, " + mkString(", ", cons("\"" + methodName + "\"", reflectionInvokationArgs(parameterTypesAsClasses(method, relevantTypeParamsForMethod)))) + ")";
                 
                 Iterable<String> warnings = concat(
                     isPrivate && (method.getReturnType().getKind() == TypeKind.TYPEVAR || hasNonQmarkGenerics(returnType)) ? Some("\"unchecked\"") : None,
