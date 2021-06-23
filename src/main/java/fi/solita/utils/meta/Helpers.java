@@ -104,7 +104,12 @@ public abstract class Helpers {
     public static final String resolveBoxedGenericType(TypeMirror type, Elements elements) {
         // FIXME: any correct ways to do this?
         String typeStr = type.toString();
-        Element elem = elements.getTypeElement(typeStr.replaceAll("<.*>", "").replaceAll("\\[\\]", ""));
+        Element elem;
+        try {
+            elem = elements.getTypeElement(typeStr.replaceAll("<.*>", "").replaceAll("\\[\\]", ""));
+        } catch (RuntimeException e) {
+            elem = null; // Eclipse sometimes fails here with org.eclipse.jdt.internal.compiler.problem.AbortCompilation
+        }
         if (elem != null && elem.getEnclosingElement() != null && elem.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
             typeStr = reverse(reverse(typeStr).replaceFirst("[.]([^<>]*)$", Matcher.quoteReplacement("$") + "$1"));
         }
