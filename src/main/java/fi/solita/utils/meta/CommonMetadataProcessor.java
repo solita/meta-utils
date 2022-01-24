@@ -324,6 +324,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 30: return MetaMethods.M30.class;
                 case 31: return MetaMethods.M31.class;
                 case 32: return MetaMethods.M32.class;
+                case 33: return MetaMethods.M33.class;
+                case 34: return MetaMethods.M34.class;
+                case 35: return MetaMethods.M35.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
@@ -369,6 +372,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 30: return MetaConstructors.C30.class;
                 case 31: return MetaConstructors.C31.class;
                 case 32: return MetaConstructors.C32.class;
+                case 33: return MetaConstructors.C33.class;
+                case 34: return MetaConstructors.C34.class;
+                case 35: return MetaConstructors.C35.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
