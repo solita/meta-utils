@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
@@ -108,13 +109,44 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         return find(getClass().getSimpleName() + "." + option, options()).getOrElse(defaultIfNotFound);
     }
     
-    public Predicate<Element> elementsToProcess() { return Helpers.<Element>instanceOf(TypeElement.class).and(
-                                                           nonGeneratedElements).and(
-                                                           (includeAllByAnnotation.or(withAnnotations(includesAnnotation())))).and(
-                                                           not(withAnnotations(excludesAnnotation()))).and(
-                                                           qualifiedName.andThen(matches(includesRegex()).and(
-                                                                                 not(matches(excludesRegex()))))).and(
-                                                           simpleName.andThen(not(equalTo("package-info")))); }
+    public Predicate<Element> elementsToProcess(final Messager msg) {
+        return new Predicate<Element>() {
+            @Override
+            public boolean accept(Element candidate) {
+                if (!Helpers.<Element>instanceOf(TypeElement.class).accept(candidate)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to not TypeElement: " + candidate.getSimpleName());
+                    return false;
+                }
+                if (!nonGeneratedElements.accept(candidate) ) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to being generated element: " + candidate.getSimpleName());
+                    return false;
+                }
+                if (!includeAllByAnnotation.accept(candidate) && !withAnnotations(includesAnnotation()).accept(candidate)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to not included by annotation: " + candidate.getSimpleName());
+                    return false;
+                }
+                if (withAnnotations(excludesAnnotation()).accept(candidate)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to being excluded by annotation: " + candidate.getSimpleName());
+                    return false;
+                }
+                String qname = qualifiedName.apply(candidate);
+                if (!matches(includesRegex()).accept(qname)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to not maching includesRegex: " + candidate.getSimpleName());
+                    return false;
+                }
+                if (matches(excludesRegex()).accept(qname)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to matching excludesRegex: " + candidate.getSimpleName());
+                    return false;
+                }
+                if (simpleName.apply(candidate).equals("package-info")) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to being package-info: " + candidate.getSimpleName());
+                    return false;
+                }
+                
+                return true;
+            }
+        };
+    }
 
     private final Predicate<Element> includeAllByAnnotation = new Predicate<Element>() {
         public boolean accept(Element candidate) {
@@ -204,7 +236,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         long rest = 0;
         long fileWriting = 0;
         long[] cumulativeGeneratorTimes = new long[generators.size()];
-        Predicate<Element> acceptedElement = elementsToProcess();
+        Predicate<Element> acceptedElement = elementsToProcess(processingEnv.getMessager());
         @SuppressWarnings("unchecked")
         List<TypeElement> elementsToProcess = newList((Iterable<TypeElement>)filter(acceptedElement, roundEnv.getRootElements()));
         if (options.onlyPublicMembers()) {
@@ -245,13 +277,15 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 for (int i = 0; i < cumulativeGeneratorTimes.length; ++i) {
                     cumulativeGeneratorTimes[i] += totalTimesPerGenerator[i];
                 }
+                
+                //processingEnv.getMessager().printMessage(Kind.OTHER, "Processed: " + element.getQualifiedName());
             } catch (RuntimeException e) {
                 processingEnv.getMessager().printMessage(Kind.ERROR, "Exception while handling: " + element.getQualifiedName());
                 throw e;
             }
         }
         if (!elementsToProcess.isEmpty()) {
-            processingEnv.getMessager().printMessage(Kind.WARNING, getClass().getName() + " (" + version + ") processed " + elementsToProcess.size() + " elements in " + (System.nanoTime()-started)/1000/1000 + " ms (" + generation/1000/1000 + "/" + nestedGeneration/1000/1000 + "/" + rest/1000/1000 + "/" + fileWriting/1000/1000 + " ms) (" + newList(map(nanosToMillis, newArray(cumulativeGeneratorTimes))) + " ms)");
+            processingEnv.getMessager().printMessage(Kind.NOTE, getClass().getName() + " (" + version + ") processed " + elementsToProcess.size() + " elements in " + (System.nanoTime()-started)/1000/1000 + " ms (" + generation/1000/1000 + "/" + nestedGeneration/1000/1000 + "/" + rest/1000/1000 + "/" + fileWriting/1000/1000 + " ms) (" + newList(map(nanosToMillis, newArray(cumulativeGeneratorTimes))) + " ms)");
         }
         return false;
     }
