@@ -12,13 +12,11 @@ import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.sequence;
 import static fi.solita.utils.functional.Functional.transpose;
-import static fi.solita.utils.functional.FunctionalA.map;
 import static fi.solita.utils.functional.FunctionalM.find;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.matches;
 import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.element2NestedClasses;
-import static fi.solita.utils.meta.Helpers.equalTo;
 import static fi.solita.utils.meta.Helpers.getPackageName;
 import static fi.solita.utils.meta.Helpers.nanosToMillis;
 import static fi.solita.utils.meta.Helpers.nonGeneratedElements;
@@ -42,6 +40,8 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -62,6 +62,7 @@ import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
 import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
 import fi.solita.utils.meta.generators.MethodsAsFunctions;
 
+@SupportedSourceVersion(SourceVersion.RELEASE_11)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"CommonMetadataProcessor." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.generatedClassNamePattern,

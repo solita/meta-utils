@@ -507,7 +507,11 @@ public abstract class Helpers {
         }
         
         public final boolean isSameType(TypeMirror type, Class<?> other) {
-            return typeUtils.isSameType(typeUtils.erasure(type), typeUtils.erasure(elementUtils.getTypeElement(other.getName()).asType()));
+            TypeElement ty = elementUtils.getTypeElement(other.getName());
+            if (ty == null) {
+                throw new RuntimeException("Cannot determine type for: " + other.getName());
+            }
+            return typeUtils.isSameType(typeUtils.erasure(type), typeUtils.erasure(ty.asType()));
         }
         
         public final boolean throwsCheckedExceptions(ExecutableElement e) {
