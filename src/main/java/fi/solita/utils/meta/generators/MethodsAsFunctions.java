@@ -1,5 +1,6 @@
 package fi.solita.utils.meta.generators;
 
+import static fi.solita.utils.functional.Collections.emptyList;
 import static fi.solita.utils.functional.Collections.newList;
 import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.concat;
@@ -82,12 +83,17 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
         boolean generateMemberNameAccessorForMethods();
         boolean onlyPublicMembers();
         boolean includePrivateMembers();
+        boolean methodsAsFunctionsEnabled();
     }
     
     public static final MethodsAsFunctions instance = new MethodsAsFunctions();
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
+        if (!options.methodsAsFunctionsEnabled()) {
+            return emptyList();
+        }
+        
         Iterable<ExecutableElement> elements = element2Methods.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);

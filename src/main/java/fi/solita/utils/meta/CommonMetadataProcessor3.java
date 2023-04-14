@@ -5,7 +5,7 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"CommonMetadataProcessor3." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.generatedClassNamePattern,
@@ -15,7 +15,9 @@ import javax.lang.model.SourceVersion;
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.onlyPublicMembers,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.includePrivateMembers,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.includesAnnotation,
-                   "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.excludesAnnotation})
+                   "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.excludesAnnotation,
+                   "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.methodsAsFunctionsEnabled,
+                   "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.constructorsAsFunctionsEnabled})
 public class CommonMetadataProcessor3 extends CommonMetadataProcessor<CommonMetadataProcessor.CombinedGeneratorOptions> {
     @Override
     protected boolean enabledByDefault() {

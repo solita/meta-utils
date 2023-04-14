@@ -10,6 +10,7 @@ import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.Functional.zipWithIndex;
+import static fi.solita.utils.functional.FunctionalA.concat;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.boxedQualifiedName;
@@ -23,8 +24,8 @@ import static fi.solita.utils.meta.Helpers.joinWithSpace;
 import static fi.solita.utils.meta.Helpers.padding;
 import static fi.solita.utils.meta.Helpers.parameterTypesAsClasses;
 import static fi.solita.utils.meta.Helpers.paramsWithCast;
-import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.privateElement;
+import static fi.solita.utils.meta.Helpers.publicElement;
 import static fi.solita.utils.meta.Helpers.qualifiedName;
 import static fi.solita.utils.meta.Helpers.relevantTypeParams;
 import static fi.solita.utils.meta.Helpers.resolveVisibility;
@@ -61,12 +62,17 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
         boolean generateMemberAccessorForConstructors();
         boolean onlyPublicMembers();
         boolean includePrivateMembers();
+        boolean constructorsAsFunctionsEnabled();
     }
     
     public static ConstructorsAsFunctions instance = new ConstructorsAsFunctions();
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
+        if (!options.constructorsAsFunctionsEnabled()) {
+            return emptyList();
+        }
+        
         if (source.getModifiers().contains(Modifier.ABSTRACT)) {
             return emptyList();
         }

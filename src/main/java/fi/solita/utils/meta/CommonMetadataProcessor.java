@@ -62,7 +62,7 @@ import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
 import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
 import fi.solita.utils.meta.generators.MethodsAsFunctions;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"CommonMetadataProcessor." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.generatedClassNamePattern,
@@ -72,7 +72,9 @@ import fi.solita.utils.meta.generators.MethodsAsFunctions;
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.onlyPublicMembers,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includePrivateMembers,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includesAnnotation,
-                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesAnnotation})
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesAnnotation,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.methodsAsFunctionsEnabled,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.constructorsAsFunctionsEnabled})
 public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.CombinedGeneratorOptions> extends AbstractProcessor {
 
     private static final int version = 1;
@@ -87,6 +89,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         public static final String includePrivateMembers = "includePrivateMembers";
         public static final String includesAnnotation = "includesAnnotation";
         public static final String excludesAnnotation = "excludesAnnotation";
+        public static final String methodsAsFunctionsEnabled = "methodsAsFunctionsEnabled";
+        public static final String constructorsAsFunctionsEnabled = "constructorsAsFunctionsEnabled";
     }
     
     public Map<String, String> options()      { return processingEnv.getOptions(); }
@@ -105,6 +109,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
     public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.annotation.processing.Generated", "javax.annotation.Generated", "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
     public Pattern extendClassNamePattern()   { return Pattern.compile("<not enabled>"); }
+    public boolean methodsAsFunctionsEnabled(){ return Boolean.parseBoolean(findOption(Options.methodsAsFunctionsEnabled, "true")); }
+    public boolean constructorsAsFunctionsEnabled(){ return Boolean.parseBoolean(findOption(Options.constructorsAsFunctionsEnabled, "true")); }
 
     public String findOption(String option, String defaultIfNotFound) {
         return find(getClass().getSimpleName() + "." + option, options()).getOrElse(defaultIfNotFound);
@@ -161,6 +167,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         final boolean includePrivateMembers = CommonMetadataProcessor.this.includePrivateMembers();
         final String generatedPackagePattern = CommonMetadataProcessor.this.generatedPackagePattern();
         final String generatedClassNamePattern = CommonMetadataProcessor.this.generatedClassNamePattern();
+        final boolean methodsAsFunctionsEnabled = CommonMetadataProcessor.this.methodsAsFunctionsEnabled();
+        final boolean constructorsAsFunctionsEnabled = CommonMetadataProcessor.this.constructorsAsFunctionsEnabled();
         return (OPTIONS) new CombinedGeneratorOptions() {
             public boolean onlyPublicMembers() {
                 return onlyPublicMembers;
@@ -175,6 +183,14 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
             @Override
             public String generatedClassNamePattern() {
                 return generatedClassNamePattern;
+            }
+            @Override
+            public boolean methodsAsFunctionsEnabled() {
+                return methodsAsFunctionsEnabled;
+            }
+            @Override
+            public boolean constructorsAsFunctionsEnabled() {
+                return constructorsAsFunctionsEnabled;
             }
         };
     }
