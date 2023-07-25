@@ -10,7 +10,6 @@ import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.Functional.zipWithIndex;
-import static fi.solita.utils.functional.FunctionalA.concat;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.boxedQualifiedName;

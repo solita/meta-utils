@@ -39,6 +39,7 @@ import fi.solita.utils.functional.Function32;
 import fi.solita.utils.functional.Function33;
 import fi.solita.utils.functional.Function34;
 import fi.solita.utils.functional.Function35;
+import fi.solita.utils.functional.Function36;
 import fi.solita.utils.functional.Function4;
 import fi.solita.utils.functional.Function5;
 import fi.solita.utils.functional.Function6;
@@ -74,6 +75,7 @@ import fi.solita.utils.functional.Tuple32;
 import fi.solita.utils.functional.Tuple33;
 import fi.solita.utils.functional.Tuple34;
 import fi.solita.utils.functional.Tuple35;
+import fi.solita.utils.functional.Tuple36;
 import fi.solita.utils.functional.Tuple4;
 import fi.solita.utils.functional.Tuple5;
 import fi.solita.utils.functional.Tuple6;
@@ -957,6 +959,31 @@ public abstract class MetaConstructors {
         private final Class<?> clazz;
         private final Class<?>[] argClasses;
         public C35(Class<?> clazz, Class<?>... argClasses) {
+            this.clazz = clazz;
+            this.argClasses = argClasses;
+        }
+        @Override
+        public List<Class<?>> getConstructorParameterTypes() {
+            return Collections.unmodifiableList(Arrays.asList(argClasses));
+        }
+        @Override
+        public Constructor<R> getMember() {
+            if ($r == null) {
+                $r = doGetMember(clazz, argClasses);
+            }
+            return $r;
+        }
+        @Override
+        public String toString() {
+            return doToString(clazz, argClasses);
+        }
+    }
+    
+    public static abstract class C36<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,T32,T33,T34,T35,T36,R> extends Function36<T1,T2,T3,T4,T5,T6,T7,T8,T9,T10,T11,T12,T13,T14,T15,T16,T17,T18,T19,T20,T21,T22,T23,T24,T25,T26,T27,T28,T29,T30,T31,T32,T33,T34,T35,T36,R> implements MetaConstructor<Tuple36<? extends T1,? extends T2,? extends T3,? extends T4,? extends T5,? extends T6,? extends T7,? extends T8,? extends T9,? extends T10,? extends T11,? extends T12,? extends T13,? extends T14,? extends T15,? extends T16,? extends T17,? extends T18,? extends T19,? extends T20,? extends T21,? extends T22,? extends T23,? extends T24,? extends T25,? extends T26,? extends T27,? extends T28,? extends T29,? extends T30,? extends T31,? extends T32,? extends T33,? extends T34,? extends T35,? extends T36>,R> {
+        private transient Constructor<R> $r;
+        private final Class<?> clazz;
+        private final Class<?>[] argClasses;
+        public C36(Class<?> clazz, Class<?>... argClasses) {
             this.clazz = clazz;
             this.argClasses = argClasses;
         }

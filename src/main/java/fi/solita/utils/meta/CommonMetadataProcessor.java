@@ -195,7 +195,6 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         };
     }
     
-    @SuppressWarnings("unchecked")
     public List<Generator<? super OPTIONS>> generators() {
         return Arrays.<Generator<? super OPTIONS>>asList(
                        InstanceFieldsAsEnum.instance,
@@ -378,6 +377,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 33: return MetaMethods.M33.class;
                 case 34: return MetaMethods.M34.class;
                 case 35: return MetaMethods.M35.class;
+                case 36: return MetaMethods.M36.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
@@ -426,6 +426,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 33: return MetaConstructors.C33.class;
                 case 34: return MetaConstructors.C34.class;
                 case 35: return MetaConstructors.C35.class;
+                case 36: return MetaConstructors.C36.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }

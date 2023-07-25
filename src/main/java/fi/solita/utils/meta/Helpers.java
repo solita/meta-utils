@@ -421,6 +421,7 @@ public abstract class Helpers {
     };
     
     public static final Predicate<Element> nonGeneratedElements = new Predicate<Element>() {
+        @SuppressWarnings("unchecked")
         @Override
         public boolean accept(Element candidate) {
             return candidate.getAnnotation(Helpers.GENERATED) == null;
