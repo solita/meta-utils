@@ -9,6 +9,7 @@ import static fi.solita.utils.functional.Functional.exists;
 import static fi.solita.utils.functional.Functional.filter;
 import static fi.solita.utils.functional.Functional.head;
 import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.reduce;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.FunctionalC.reverse;
@@ -740,7 +741,7 @@ public abstract class Helpers {
         return map(join, zip(argCasts, map(simpleName, parameters)));
     }
     
-    public static final Predicate<Element> withAnnotations(final String classNames) {
+    public static final Predicate<Element> withAnnotations(final String classNames, final boolean includeNested) {
         final Set<String> className = newSet(classNames.split(","));
         return new Predicate<Element>() {
             @Override
@@ -753,13 +754,44 @@ public abstract class Helpers {
                     return false;
                 }
                 visited.add(e);
+                
+                Iterable<AnnotationMirror> constructorAnnotations;
+                Iterable<AnnotationMirror> methodAnnotations;
+                Iterable<AnnotationMirror> fieldAnnotations;
+                if (includeNested) {
+                    for (TypeElement n: element2NestedClasses.apply(e)) {
+                        if (acc(n, visited)) {
+                            // annotation exists on a nested class
+                            return true;
+                        }
+                    }
+                    constructorAnnotations = flatMap(new Transformer<ExecutableElement,List<? extends AnnotationMirror>>() {
+                        @Override
+                        public List<? extends AnnotationMirror> transform(ExecutableElement source) {
+                            return source.getAnnotationMirrors();
+                        }}, element2Constructors.apply(e));
+                    methodAnnotations = flatMap(new Transformer<ExecutableElement,List<? extends AnnotationMirror>>() {
+                        @Override
+                        public List<? extends AnnotationMirror> transform(ExecutableElement source) {
+                            return source.getAnnotationMirrors();
+                        }}, element2Methods.apply(e));
+                    fieldAnnotations = flatMap(new Transformer<VariableElement,List<? extends AnnotationMirror>>() {
+                        @Override
+                        public List<? extends AnnotationMirror> transform(VariableElement source) {
+                            return source.getAnnotationMirrors();
+                        }}, element2Fields.apply(e));
+                } else {
+                    constructorAnnotations = Collections.emptyList();
+                    methodAnnotations = Collections.emptyList();
+                    fieldAnnotations = Collections.emptyList();
+                }
                 return exists(new Predicate<AnnotationMirror>() {
                     @Override
                     public boolean accept(AnnotationMirror m) {
                         Element elem = m.getAnnotationType().asElement();
                         return className.contains(qualifiedName.apply(elem)) || !elem.equals(e) && acc(elem, visited);
                     }
-                }, e.getAnnotationMirrors());
+                }, concat(e.getAnnotationMirrors(), constructorAnnotations, methodAnnotations, fieldAnnotations));
             }
         };
     }

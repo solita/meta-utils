@@ -128,11 +128,11 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                     //msg.printMessage(Kind.OTHER, "Skipping due to being generated element: " + candidate.getSimpleName());
                     return false;
                 }
-                if (!includeAllByAnnotation.accept(candidate) && !withAnnotations(includesAnnotation()).accept(candidate)) {
+                if (!includeAllByAnnotation.accept(candidate) && !withAnnotations(includesAnnotation(), true).accept(candidate)) {
                     //msg.printMessage(Kind.OTHER, "Skipping due to not included by annotation: " + candidate.getSimpleName());
                     return false;
                 }
-                if (withAnnotations(excludesAnnotation()).accept(candidate)) {
+                if (withAnnotations(excludesAnnotation(), true).accept(candidate)) {
                     //msg.printMessage(Kind.OTHER, "Skipping due to being excluded by annotation: " + candidate.getSimpleName());
                     return false;
                 }
