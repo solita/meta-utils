@@ -461,6 +461,13 @@ public abstract class Helpers {
             return candidate.getModifiers().contains(Modifier.PRIVATE);
         }
     };
+    
+    public static final Predicate<Element> staticElement = new Predicate<Element>() {
+        @Override
+        public boolean accept(Element candidate) {
+            return candidate.getModifiers().contains(Modifier.STATIC);
+        }
+    };
 
     public static final boolean isPrivate(Element e) {
         return e.getModifiers().contains(Modifier.PRIVATE);
@@ -469,7 +476,7 @@ public abstract class Helpers {
     public static final boolean isFinal(Element e) {
         return e.getModifiers().contains(Modifier.FINAL);
     }
-
+    
     public static final boolean returnsVoid(ExecutableElement method) {
         return method.getReturnType().getKind() == TypeKind.VOID;
     }
