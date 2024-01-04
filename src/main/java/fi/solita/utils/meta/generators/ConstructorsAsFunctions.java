@@ -49,6 +49,8 @@ import javax.lang.model.element.VariableElement;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function3;
+import fi.solita.utils.functional.Option;
+import fi.solita.utils.meta.ForceMetadataGeneration;
 import fi.solita.utils.meta.Helpers;
 
 public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.Options> {
@@ -68,7 +70,7 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
-        if (!options.constructorsAsFunctionsEnabled()) {
+        if (!options.constructorsAsFunctionsEnabled() && (source.getAnnotation(ForceMetadataGeneration.class) == null || !source.getAnnotation(ForceMetadataGeneration.class).constructorsAsFunctions())) {
             return emptyList();
         }
         

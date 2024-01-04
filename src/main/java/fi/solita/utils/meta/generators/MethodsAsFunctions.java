@@ -69,6 +69,7 @@ import fi.solita.utils.functional.Functional;
 import fi.solita.utils.functional.Pair;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
+import fi.solita.utils.meta.ForceMetadataGeneration;
 import fi.solita.utils.meta.Helpers;
 
 public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
@@ -90,7 +91,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
-        if (!options.methodsAsFunctionsEnabled()) {
+        if (!options.methodsAsFunctionsEnabled() && (source.getAnnotation(ForceMetadataGeneration.class) == null || !source.getAnnotation(ForceMetadataGeneration.class).methodsAsFunctions())) {
             return emptyList();
         }
         
