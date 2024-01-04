@@ -56,6 +56,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -102,7 +103,7 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
             elements = filter(not(privateElement), elements);
         }
         
-        Iterable<VariableElement> processedFields = element2Fields.apply(source);
+        Iterable<Element> processedFields = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
             processedFields = filter(publicElement, processedFields);
         } else if (!options.includePrivateMembers()) {

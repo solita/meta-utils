@@ -303,11 +303,19 @@ public abstract class Helpers {
         }
     };
     
-    public static final Function1<Element, Iterable<VariableElement>> element2Fields = new Transformer<Element, Iterable<VariableElement>>() {
+    public static final Function1<Element, Iterable<Element>> element2Fields = new Transformer<Element, Iterable<Element>>() {
         @SuppressWarnings("unchecked")
         @Override
-        public Iterable<VariableElement> transform(Element source) {
-            return (Iterable<VariableElement>) filter(fields, Workaround.getEnclosedElementsDeclarationOrder(source));
+        public Iterable<Element> transform(Element source) {
+            return (Iterable<Element>) filter(fields, Workaround.getEnclosedElementsDeclarationOrder(source));
+        }
+    };
+    
+    public static final Function1<Element, Iterable<Element>> element2RecordComponents = new Transformer<Element, Iterable<Element>>() {
+        @SuppressWarnings("unchecked")
+        @Override
+        public Iterable<Element> transform(Element source) {
+            return (Iterable<Element>) filter(recordComponents, Workaround.getEnclosedElementsDeclarationOrder(source));
         }
     };
     
@@ -367,6 +375,13 @@ public abstract class Helpers {
         @Override
         public boolean accept(Element candidate) {
             return candidate.getKind() == ElementKind.FIELD;
+        }
+    };
+    
+    public static final Predicate<Element> recordComponents = new Predicate<Element>() {
+        @Override
+        public boolean accept(Element candidate) {
+            return candidate.getKind().name().equals("RECORD_COMPONENT");
         }
     };
     
@@ -475,6 +490,10 @@ public abstract class Helpers {
     
     public static final boolean isFinal(Element e) {
         return e.getModifiers().contains(Modifier.FINAL);
+    }
+    
+    public static final boolean isAbstract(Element e) {
+        return e.getModifiers().contains(Modifier.ABSTRACT);
     }
     
     public static final boolean returnsVoid(ExecutableElement method) {
@@ -765,6 +784,7 @@ public abstract class Helpers {
                 Iterable<AnnotationMirror> constructorAnnotations;
                 Iterable<AnnotationMirror> methodAnnotations;
                 Iterable<AnnotationMirror> fieldAnnotations;
+                Iterable<AnnotationMirror> recordComponentAnnotations;
                 if (includeNested) {
                     for (TypeElement n: element2NestedClasses.apply(e)) {
                         if (acc(n, visited)) {
@@ -782,15 +802,21 @@ public abstract class Helpers {
                         public List<? extends AnnotationMirror> transform(ExecutableElement source) {
                             return source.getAnnotationMirrors();
                         }}, element2Methods.apply(e));
-                    fieldAnnotations = flatMap(new Transformer<VariableElement,List<? extends AnnotationMirror>>() {
+                    fieldAnnotations = flatMap(new Transformer<Element,List<? extends AnnotationMirror>>() {
                         @Override
-                        public List<? extends AnnotationMirror> transform(VariableElement source) {
+                        public List<? extends AnnotationMirror> transform(Element source) {
                             return source.getAnnotationMirrors();
                         }}, element2Fields.apply(e));
+                    recordComponentAnnotations = flatMap(new Transformer<Element,List<? extends AnnotationMirror>>() {
+                        @Override
+                        public List<? extends AnnotationMirror> transform(Element source) {
+                            return source.getAnnotationMirrors();
+                        }}, element2RecordComponents.apply(e));
                 } else {
                     constructorAnnotations = Collections.emptyList();
                     methodAnnotations = Collections.emptyList();
                     fieldAnnotations = Collections.emptyList();
+                    recordComponentAnnotations = Collections.emptyList();
                 }
                 return exists(new Predicate<AnnotationMirror>() {
                     @Override
@@ -798,7 +824,7 @@ public abstract class Helpers {
                         Element elem = m.getAnnotationType().asElement();
                         return className.contains(qualifiedName.apply(elem)) || !elem.equals(e) && acc(elem, visited);
                     }
-                }, concat(e.getAnnotationMirrors(), constructorAnnotations, methodAnnotations, fieldAnnotations));
+                }, concat(e.getAnnotationMirrors(), constructorAnnotations, methodAnnotations, fieldAnnotations, recordComponentAnnotations));
             }
         };
     }

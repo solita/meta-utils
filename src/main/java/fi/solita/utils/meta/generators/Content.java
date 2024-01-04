@@ -152,7 +152,7 @@ public abstract class Content {
             
             Iterable<Long> generatorTimesForContent = map(Helpers.<Long>left(), elemData);
             Iterable<List<Long>> generatorTimesForNestedClasses = map(Helpers.<List<Long>>left(), nestedData);
-            Iterable<String> elemContents = flatMap(Helpers.<List<String>>right(), elemData);
+            List<String> elemContents = newList(flatMap(Helpers.<List<String>>right(), elemData));
             Iterable<String> nestedContents = flatMap(Helpers.<List<String>>right(), nestedData);
             
             List<Long> totalTimesPerGenerator = newList(map(Helpers.iterableSum, transpose(cons(generatorTimesForContent, generatorTimesForNestedClasses))));
@@ -172,7 +172,7 @@ public abstract class Content {
                           elemContents,
                           map(padding, nestedContents),
                           Some("}")));
-            return Pair.of(totalTimesPerGenerator, allContents);
+            return Pair.of(totalTimesPerGenerator, !Helpers.isAbstract(source) && elemContents.isEmpty() && nestedData.isEmpty() ? Collections.<String>emptyList() : allContents);
         }
     };
 }

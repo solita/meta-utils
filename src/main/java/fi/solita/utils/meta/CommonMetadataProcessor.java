@@ -74,7 +74,10 @@ import fi.solita.utils.meta.generators.MethodsAsFunctions;
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includesAnnotation,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesAnnotation,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.methodsAsFunctionsEnabled,
-                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.constructorsAsFunctionsEnabled})
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.constructorsAsFunctionsEnabled,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.instanceFieldsAsEnumEnabled,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.instanceFieldsAsFunctionsEnabled,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.instanceFieldsAsTupleEnabled})
 public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.CombinedGeneratorOptions> extends AbstractProcessor {
 
     private static final int version = 1;
@@ -91,6 +94,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         public static final String excludesAnnotation = "excludesAnnotation";
         public static final String methodsAsFunctionsEnabled = "methodsAsFunctionsEnabled";
         public static final String constructorsAsFunctionsEnabled = "constructorsAsFunctionsEnabled";
+        public static final String instanceFieldsAsEnumEnabled = "instanceFieldsAsEnumEnabled";
+        public static final String instanceFieldsAsFunctionsEnabled = "instanceFieldsAsFunctionsEnabled";
+        public static final String instanceFieldsAsTupleEnabled = "instanceFieldsAsTupleEnabled";
     }
     
     public Map<String, String> options()      { return processingEnv.getOptions(); }
@@ -99,18 +105,21 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         return true;
     }
     
-    public boolean enabled()                  { return Boolean.parseBoolean(findOption(Options.enabled, Boolean.toString(enabledByDefault()))); }
-    public Pattern includesRegex()            { return Pattern.compile(findOption(Options.includesRegex, ".*")); }
-    public Pattern excludesRegex()            { return Pattern.compile(findOption(Options.excludesRegex, ".*_")); }
-    public boolean onlyPublicMembers()        { return Boolean.parseBoolean(findOption(Options.onlyPublicMembers, "false")); }
-    public boolean includePrivateMembers()    { return Boolean.parseBoolean(findOption(Options.includePrivateMembers, "false")); }
-    public String generatedClassNamePattern() { return findOption(Options.generatedClassNamePattern, "{}_"); }
-    public String generatedPackagePattern()   { return findOption(Options.generatedPackagePattern, "{}"); }
-    public String includesAnnotation()        { return findOption(Options.includesAnnotation, ""); }
-    public String excludesAnnotation()        { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.annotation.processing.Generated", "javax.annotation.Generated", "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
-    public Pattern extendClassNamePattern()   { return Pattern.compile("<not enabled>"); }
-    public boolean methodsAsFunctionsEnabled(){ return Boolean.parseBoolean(findOption(Options.methodsAsFunctionsEnabled, "true")); }
-    public boolean constructorsAsFunctionsEnabled(){ return Boolean.parseBoolean(findOption(Options.constructorsAsFunctionsEnabled, "true")); }
+    public boolean enabled()                          { return Boolean.parseBoolean(findOption(Options.enabled, Boolean.toString(enabledByDefault()))); }
+    public Pattern includesRegex()                    { return Pattern.compile(findOption(Options.includesRegex, ".*")); }
+    public Pattern excludesRegex()                    { return Pattern.compile(findOption(Options.excludesRegex, ".*_")); }
+    public boolean onlyPublicMembers()                { return Boolean.parseBoolean(findOption(Options.onlyPublicMembers, "false")); }
+    public boolean includePrivateMembers()            { return Boolean.parseBoolean(findOption(Options.includePrivateMembers, "false")); }
+    public String generatedClassNamePattern()         { return findOption(Options.generatedClassNamePattern, "{}_"); }
+    public String generatedPackagePattern()           { return findOption(Options.generatedPackagePattern, "{}"); }
+    public String includesAnnotation()                { return findOption(Options.includesAnnotation, ""); }
+    public String excludesAnnotation()                { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.annotation.processing.Generated", "javax.annotation.Generated", "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
+    public Pattern extendClassNamePattern()           { return Pattern.compile("<not enabled>"); }
+    public boolean methodsAsFunctionsEnabled()        { return Boolean.parseBoolean(findOption(Options.methodsAsFunctionsEnabled, "true")); }
+    public boolean constructorsAsFunctionsEnabled()   { return Boolean.parseBoolean(findOption(Options.constructorsAsFunctionsEnabled, "true")); }
+    public boolean instanceFieldsAsEnumEnabled()      { return Boolean.parseBoolean(findOption(Options.instanceFieldsAsEnumEnabled, "true")); }
+    public boolean instanceFieldsAsFunctionsEnabled() { return Boolean.parseBoolean(findOption(Options.instanceFieldsAsFunctionsEnabled, "true")); }
+    public boolean instanceFieldsAsTupleEnabled()     { return Boolean.parseBoolean(findOption(Options.instanceFieldsAsTupleEnabled, "true")); }
 
     public String findOption(String option, String defaultIfNotFound) {
         return find(getClass().getSimpleName() + "." + option, options()).getOrElse(defaultIfNotFound);
@@ -169,6 +178,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         final String generatedClassNamePattern = CommonMetadataProcessor.this.generatedClassNamePattern();
         final boolean methodsAsFunctionsEnabled = CommonMetadataProcessor.this.methodsAsFunctionsEnabled();
         final boolean constructorsAsFunctionsEnabled = CommonMetadataProcessor.this.constructorsAsFunctionsEnabled();
+        final boolean instanceFieldsAsEnumEnabled = CommonMetadataProcessor.this.instanceFieldsAsEnumEnabled();
+        final boolean instanceFieldsAsFunctionsEnabled = CommonMetadataProcessor.this.instanceFieldsAsFunctionsEnabled();
+        final boolean instanceFieldsAsTupleEnabled = CommonMetadataProcessor.this.instanceFieldsAsTupleEnabled();
         return (OPTIONS) new CombinedGeneratorOptions() {
             public boolean onlyPublicMembers() {
                 return onlyPublicMembers;
@@ -191,6 +203,18 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
             @Override
             public boolean constructorsAsFunctionsEnabled() {
                 return constructorsAsFunctionsEnabled;
+            }
+            @Override
+            public boolean instanceFieldsAsEnumEnabled() {
+                return instanceFieldsAsEnumEnabled;
+            }
+            @Override
+            public boolean instanceFieldsAsFunctionsEnabled() {
+                return instanceFieldsAsFunctionsEnabled;
+            }
+            @Override
+            public boolean instanceFieldsAsTupleEnabled() {
+                return instanceFieldsAsTupleEnabled;
             }
         };
     }
@@ -272,14 +296,17 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 }
                 List<Pair<List<Long>, List<String>>> nestedData = newList(map(nestedDataProducer, filter(Predicate.of(Function.<Element,Boolean>constant(true)), nestedToProcess)));
                 long time3 = System.nanoTime();
-                Iterable<String> content = map(padding, concat(flatMap(Helpers.<List<String>>right(), elemData), flatMap(Helpers.<List<String>>right(), nestedData)));
+                List<String> content = newList(map(padding, concat(flatMap(Helpers.<List<String>>right(), elemData), flatMap(Helpers.<List<String>>right(), nestedData))));
                 
                 String genPackage = genPackagePat.replace("{}", getPackageName(element));
                 String genClassName = genClassNamePat.replace("{}", element.getSimpleName().toString());
                 String superclassName = removeGenericPart.apply(element.getSuperclass().toString());
                 Option<String> extendedClassName = extendClassNamePattern.matcher(superclassName).matches() ? Some(genClassNamePat.replace("{}", superclassName)) : Option.<String>None();
                 long time4 = System.nanoTime();
-                ClassFileWriter.writeClassFile(genPackage, genClassName, extendedClassName, content, clazz, filer, element, Option.of(element.getAnnotation(SuppressWarnings.class)), element.getAnnotation(Deprecated.class) != null);
+                if (!content.isEmpty() || Helpers.isAbstract(element)) {
+                    // always produce metaclass for abstract classes in case they are inherited
+                    ClassFileWriter.writeClassFile(genPackage, genClassName, extendedClassName, content, clazz, filer, element, Option.of(element.getAnnotation(SuppressWarnings.class)), element.getAnnotation(Deprecated.class) != null);
+                }
                 
                 generation += time2 - time;
                 nestedGeneration += time3 - time2;

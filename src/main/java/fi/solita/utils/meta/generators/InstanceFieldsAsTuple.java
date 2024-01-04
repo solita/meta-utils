@@ -14,7 +14,7 @@ import static fi.solita.utils.functional.Functional.filter;
 import static fi.solita.utils.functional.Functional.isEmpty;
 import static fi.solita.utils.functional.Functional.map;
 import static fi.solita.utils.functional.Functional.mkString;
-import static fi.solita.utils.functional.FunctionalA.concat;
+import static fi.solita.utils.functional.Functional.concat;
 import static fi.solita.utils.functional.Option.Some;
 import static fi.solita.utils.functional.Predicates.not;
 
@@ -22,9 +22,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 
+import fi.solita.utils.meta.ForceMetadataGeneration;
 import fi.solita.utils.meta.Helpers;
 import fi.solita.utils.meta.Helpers.EnvDependent;
 import fi.solita.utils.functional.Apply;
@@ -46,19 +47,24 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         
         String generatedPackagePattern();
         String generatedClassNamePattern();
+        boolean instanceFieldsAsTupleEnabled();
     }
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, final Options options, final TypeElement enclosingElement) {
-        Iterable<VariableElement> elements = Helpers.element2Fields.apply(enclosingElement);
+        if (!options.instanceFieldsAsTupleEnabled() && (enclosingElement.getAnnotation(ForceMetadataGeneration.class) == null || !enclosingElement.getAnnotation(ForceMetadataGeneration.class).instanceFieldsAsTuple())) {
+            return emptyList();
+        }
+        
+        Iterable<Element> elements = Helpers.element2Fields.apply(enclosingElement);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
         } else if (!options.includePrivateMembers()) {
             elements = filter(not(privateElement), elements);
         }
         
-        List<VariableElement> fieldsToInclude = newList(filter(not(staticElements), elements));
-        if (fieldsToInclude.size() > Tuple.class.getDeclaredClasses().length) {
+        List<Element> fieldsToInclude = newList(filter(not(staticElements), elements));
+        if (fieldsToInclude.size() > Tuple.class.getDeclaredClasses().length || fieldsToInclude.isEmpty()) {
             return emptyList();
         }
         
@@ -72,9 +78,9 @@ public class InstanceFieldsAsTuple extends Generator<InstanceFieldsAsTuple.Optio
         
         final EnvDependent helper = new Helpers.EnvDependent(processingEnv);
         
-        List<Tuple3<String, String, Boolean>> fieldData = newList(map(new Transformer<VariableElement,Tuple3<String,String,Boolean>>() {
+        List<Tuple3<String, String, Boolean>> fieldData = newList(map(new Transformer<Element,Tuple3<String,String,Boolean>>() {
             @Override
-            public Tuple3<String,String,Boolean> transform(VariableElement field) {
+            public Tuple3<String,String,Boolean> transform(Element field) {
                 f.apply((fi.solita.utils.meta.generators.InstanceFieldsAsFunctions.Options) options, helper, field);
                 String relevantTypeParamsString = isEmpty(f.relevantTypeParamsWithoutConstraints) ? "" : "<" + mkString(", ", f.relevantTypeParamsWithoutConstraints) + ">";
                 

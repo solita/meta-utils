@@ -1,5 +1,18 @@
 package fi.solita.utils.meta.generators;
 
+import static fi.solita.utils.functional.Collections.emptyList;
+import static fi.solita.utils.functional.Collections.newList;
+import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatMap;
+import static fi.solita.utils.functional.Functional.isEmpty;
+import static fi.solita.utils.functional.Functional.map;
+import static fi.solita.utils.functional.Functional.mkString;
+import static fi.solita.utils.functional.Functional.subtract;
+import static fi.solita.utils.functional.Functional.zip;
+import static fi.solita.utils.functional.FunctionalA.concat;
+import static fi.solita.utils.functional.FunctionalA.contains;
+import static fi.solita.utils.functional.Option.Some;
+import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.element2Fields;
 import static fi.solita.utils.meta.Helpers.elementGenericQualifiedName;
 import static fi.solita.utils.meta.Helpers.hasNonQmarkGenerics;
@@ -19,28 +32,15 @@ import static fi.solita.utils.meta.Helpers.typeParameter2String;
 import static fi.solita.utils.meta.generators.Content.EmptyLine;
 import static fi.solita.utils.meta.generators.Content.None;
 import static fi.solita.utils.meta.generators.Content.catchBlock;
-import static fi.solita.utils.functional.Collections.newList;
-import static fi.solita.utils.functional.Functional.contains;
-import static fi.solita.utils.functional.Functional.filter;
-import static fi.solita.utils.functional.Functional.flatMap;
-import static fi.solita.utils.functional.Functional.isEmpty;
-import static fi.solita.utils.functional.Functional.map;
-import static fi.solita.utils.functional.Functional.mkString;
-import static fi.solita.utils.functional.Functional.subtract;
-import static fi.solita.utils.functional.Functional.zip;
-import static fi.solita.utils.functional.FunctionalA.concat;
-import static fi.solita.utils.functional.Option.Some;
-import static fi.solita.utils.functional.Predicates.not;
 
 import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
-import fi.solita.utils.meta.Helpers;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function3;
@@ -48,6 +48,8 @@ import fi.solita.utils.functional.Pair;
 import fi.solita.utils.functional.Predicate;
 import fi.solita.utils.functional.Transformer;
 import fi.solita.utils.functional.Tuple2;
+import fi.solita.utils.meta.ForceMetadataGeneration;
+import fi.solita.utils.meta.Helpers;
 
 public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctions.Options> {
     
@@ -64,11 +66,16 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
         boolean makeFieldsPublic();
         boolean onlyPublicMembers();
         boolean includePrivateMembers();
+        boolean instanceFieldsAsFunctionsEnabled();
     }
     
     @Override
     public Iterable<String> apply(ProcessingEnvironment processingEnv, Options options, TypeElement source) {
-        Iterable<VariableElement> elements = element2Fields.apply(source);
+        if (!options.instanceFieldsAsFunctionsEnabled() && (source.getAnnotation(ForceMetadataGeneration.class) == null || !source.getAnnotation(ForceMetadataGeneration.class).instanceFieldsAsFunctions())) {
+            return emptyList();
+        }
+        
+        Iterable<Element> elements = element2Fields.apply(source);
         if (options.onlyPublicMembers()) {
             elements = filter(publicElement, elements);
         } else if (!options.includePrivateMembers()) {
@@ -86,7 +93,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
     };
     
     // this hack is a way to share most of the code with other generators
-    static abstract class F extends Function3<Options, Helpers.EnvDependent, VariableElement, Iterable<String>> {
+    static abstract class F extends Function3<Options, Helpers.EnvDependent, Element, Iterable<String>> {
         String enclosingElementQualifiedNameImported;
         String relevantTypeParamsString;
         List<String> relevantTypeParamsWithoutConstraints;
@@ -96,7 +103,7 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
     
     public static F variableElementGen = new F() {
         @Override
-        public Iterable<String> apply(Options options, Helpers.EnvDependent helper, VariableElement field) {
+        public Iterable<String> apply(Options options, Helpers.EnvDependent helper, Element field) {
             TypeElement enclosingElement = (TypeElement) field.getEnclosingElement();
             String enclosingElementQualifiedName = qualifiedName.apply(enclosingElement);
             enclosingElementQualifiedNameImported = importTypes(enclosingElementQualifiedName);

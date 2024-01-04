@@ -13,4 +13,7 @@ import java.lang.annotation.Target;
 public @interface ForceMetadataGeneration {
     boolean constructorsAsFunctions() default false;
     boolean methodsAsFunctions() default false;
+    boolean instanceFieldsAsEnum() default false;
+    boolean instanceFieldsAsFunctions() default false;
+    boolean instanceFieldsAsTuple() default false;
 }

@@ -49,7 +49,6 @@ import javax.lang.model.element.VariableElement;
 import fi.solita.utils.functional.Apply;
 import fi.solita.utils.functional.Function1;
 import fi.solita.utils.functional.Function3;
-import fi.solita.utils.functional.Option;
 import fi.solita.utils.meta.ForceMetadataGeneration;
 import fi.solita.utils.meta.Helpers;
 
