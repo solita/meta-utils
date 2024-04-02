@@ -7,9 +7,9 @@ import static fi.solita.utils.functional.Collections.newSet;
 import static fi.solita.utils.functional.Functional.concat;
 import static fi.solita.utils.functional.Functional.exists;
 import static fi.solita.utils.functional.Functional.filter;
+import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.head;
 import static fi.solita.utils.functional.Functional.map;
-import static fi.solita.utils.functional.Functional.flatMap;
 import static fi.solita.utils.functional.Functional.reduce;
 import static fi.solita.utils.functional.Functional.zip;
 import static fi.solita.utils.functional.FunctionalC.reverse;
@@ -95,6 +95,10 @@ public abstract class Helpers {
         // FIXME: fancier way to do this?
         String type = qualifiedName.apply(e);
         return containedType(type);
+    }
+    
+    public static final String containedType(TypeMirror t) {
+        return containedType(typeMirror2GenericQualifiedName.apply(t));
     }
     
     public static final String containedType(String type) {
@@ -483,7 +487,7 @@ public abstract class Helpers {
             return candidate.getModifiers().contains(Modifier.STATIC);
         }
     };
-
+    
     public static final boolean isPrivate(Element e) {
         return e.getModifiers().contains(Modifier.PRIVATE);
     }
@@ -544,6 +548,15 @@ public abstract class Helpers {
         
         public final boolean throwsCheckedExceptions(ExecutableElement e) {
             return exists(not(uncheckedExceptions), e.getThrownTypes());
+        }
+        
+        public final Iterable<? extends TypeMirror> ancestorsInheriting(TypeMirror type, final Class<?> clazz) {
+            return filter(new Predicate<TypeMirror>() {
+                @Override
+                public boolean accept(TypeMirror candidate) {
+                    return isSubtype(candidate, clazz);
+                }
+            }, typeUtils.directSupertypes(type));
         }
     }
     
