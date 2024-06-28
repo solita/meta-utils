@@ -440,11 +440,18 @@ public abstract class Helpers {
         }
     };
     
-    public static final Predicate<Element> nonGeneratedElements = new Predicate<Element>() {
+    public static final Predicate<Element> generatedElements = new Predicate<Element>() {
         @SuppressWarnings("unchecked")
         @Override
         public boolean accept(Element candidate) {
-            return candidate.getAnnotation(Helpers.GENERATED) == null;
+            return candidate.getAnnotation(Helpers.GENERATED) != null;
+        }
+    };
+    
+    public static final Predicate<Element> forcedElements = new Predicate<Element>() {
+        @Override
+        public boolean accept(Element candidate) {
+            return candidate.getAnnotation(ForceMetadataGeneration.class) != null;
         }
     };
     
