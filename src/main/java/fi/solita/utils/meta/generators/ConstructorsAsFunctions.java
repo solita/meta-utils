@@ -137,7 +137,6 @@ public class ConstructorsAsFunctions extends Generator<ConstructorsAsFunctions.O
                 Some("}")
             );
             
-            @SuppressWarnings("unchecked")
             Iterable<String> res = concat(
                 hasRawTypes
                     ? Some("@SuppressWarnings(\"rawtypes\")")

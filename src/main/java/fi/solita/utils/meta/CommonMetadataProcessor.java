@@ -19,7 +19,8 @@ import static fi.solita.utils.functional.Predicates.not;
 import static fi.solita.utils.meta.Helpers.element2NestedClasses;
 import static fi.solita.utils.meta.Helpers.getPackageName;
 import static fi.solita.utils.meta.Helpers.nanosToMillis;
-import static fi.solita.utils.meta.Helpers.nonGeneratedElements;
+import static fi.solita.utils.meta.Helpers.generatedElements;
+import static fi.solita.utils.meta.Helpers.forcedElements;
 import static fi.solita.utils.meta.Helpers.padding;
 import static fi.solita.utils.meta.Helpers.privateElement;
 import static fi.solita.utils.meta.Helpers.publicElement;
@@ -71,6 +72,7 @@ import fi.solita.utils.meta.generators.MethodsAsFunctions;
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesRegex,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.onlyPublicMembers,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includePrivateMembers,
+                   "CommonMetadataProcessor." + CommonMetadataProcessor.Options.makeFieldsPublic,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.includesAnnotation,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.excludesAnnotation,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.methodsAsFunctionsEnabled,
@@ -90,6 +92,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         public static final String excludesRegex = "excludesRegex";
         public static final String onlyPublicMembers = "onlyPublicMembers";
         public static final String includePrivateMembers = "includePrivateMembers";
+        public static final String makeFieldsPublic = "makeFieldsPublic";
         public static final String includesAnnotation = "includesAnnotation";
         public static final String excludesAnnotation = "excludesAnnotation";
         public static final String methodsAsFunctionsEnabled = "methodsAsFunctionsEnabled";
@@ -110,10 +113,11 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public Pattern excludesRegex()                    { return Pattern.compile(findOption(Options.excludesRegex, ".*_")); }
     public boolean onlyPublicMembers()                { return Boolean.parseBoolean(findOption(Options.onlyPublicMembers, "false")); }
     public boolean includePrivateMembers()            { return Boolean.parseBoolean(findOption(Options.includePrivateMembers, "false")); }
+    public boolean makeFieldsPublic()                 { return Boolean.parseBoolean(findOption(Options.makeFieldsPublic, "false")); }
     public String generatedClassNamePattern()         { return findOption(Options.generatedClassNamePattern, "{}_"); }
     public String generatedPackagePattern()           { return findOption(Options.generatedPackagePattern, "{}"); }
     public String includesAnnotation()                { return findOption(Options.includesAnnotation, ""); }
-    public String excludesAnnotation()                { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.annotation.processing.Generated", "javax.annotation.Generated", "javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
+    public String excludesAnnotation()                { return findOption(Options.excludesAnnotation, mkString(",", newList("javax.persistence.Entity", "javax.persistence.MappedSuperclass", "javax.persistence.Embeddable", NoMetadataGeneration.class.getName()))); }
     public Pattern extendClassNamePattern()           { return Pattern.compile("<not enabled>"); }
     public boolean methodsAsFunctionsEnabled()        { return Boolean.parseBoolean(findOption(Options.methodsAsFunctionsEnabled, "true")); }
     public boolean constructorsAsFunctionsEnabled()   { return Boolean.parseBoolean(findOption(Options.constructorsAsFunctionsEnabled, "true")); }
@@ -133,8 +137,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                     //msg.printMessage(Kind.OTHER, "Skipping due to not TypeElement: " + candidate.getSimpleName());
                     return false;
                 }
-                if (!nonGeneratedElements.accept(candidate) ) {
-                    //msg.printMessage(Kind.OTHER, "Skipping due to being generated element: " + candidate.getSimpleName());
+                if (generatedElements.accept(candidate) && !forcedElements.accept(candidate)) {
+                    //msg.printMessage(Kind.OTHER, "Skipping due to being generated non-forced element: " + candidate.getSimpleName());
                     return false;
                 }
                 if (!includeAllByAnnotation.accept(candidate) && !withAnnotations(includesAnnotation(), true).accept(candidate)) {
@@ -174,6 +178,7 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
     public OPTIONS generatorOptions() {
         final boolean onlyPublicMembers = CommonMetadataProcessor.this.onlyPublicMembers();
         final boolean includePrivateMembers = CommonMetadataProcessor.this.includePrivateMembers();
+        final boolean makeFieldsPublic = CommonMetadataProcessor.this.makeFieldsPublic();
         final String generatedPackagePattern = CommonMetadataProcessor.this.generatedPackagePattern();
         final String generatedClassNamePattern = CommonMetadataProcessor.this.generatedClassNamePattern();
         final boolean methodsAsFunctionsEnabled = CommonMetadataProcessor.this.methodsAsFunctionsEnabled();
@@ -188,6 +193,10 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
             @Override
             public boolean includePrivateMembers() {
                 return includePrivateMembers;
+            }
+            @Override
+            public boolean makeFieldsPublic() {
+                return makeFieldsPublic;
             }
             public String generatedPackagePattern() {
                 return generatedPackagePattern;
@@ -299,9 +308,9 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 List<String> content = newList(map(padding, concat(flatMap(Helpers.<List<String>>right(), elemData), flatMap(Helpers.<List<String>>right(), nestedData))));
                 
                 String genPackage = genPackagePat.replace("{}", getPackageName(element));
-                String genClassName = genClassNamePat.replace("{}", element.getSimpleName().toString());
+                String genClassName = generatedClassName(genClassNamePat, element.getSimpleName().toString());
                 String superclassName = removeGenericPart.apply(element.getSuperclass().toString());
-                Option<String> extendedClassName = extendClassNamePattern.matcher(superclassName).matches() ? Some(genClassNamePat.replace("{}", superclassName)) : Option.<String>None();
+                Option<String> extendedClassName = extendClassNamePattern.matcher(superclassName).matches() ? Some(generatedClassName(genClassNamePat, superclassName)) : Option.<String>None();
                 long time4 = System.nanoTime();
                 if (!content.isEmpty() || Helpers.isAbstract(element)) {
                     // always produce metaclass for abstract classes in case they are inherited
@@ -331,6 +340,10 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
             processingEnv.getMessager().printMessage(Kind.NOTE, getClass().getName() + " (" + version + ") processed " + elementsToProcess.size() + " elements in " + (System.nanoTime()-started)/1000/1000 + " ms (" + generation/1000/1000 + "/" + nestedGeneration/1000/1000 + "/" + rest/1000/1000 + "/" + fileWriting/1000/1000 + " ms) (" + newList(map(nanosToMillis, newArray(cumulativeGeneratorTimes))) + " ms)");
         }
         return false;
+    }
+
+    public static String generatedClassName(String genClassNamePat, String className) {
+        return genClassNamePat.replace("{}", className);
     }
     
     public static abstract class CombinedGeneratorOptions implements InstanceFieldsAsFunctions.Options, MethodsAsFunctions.Options, ConstructorsAsFunctions.Options, InstanceFieldsAsEnum.Options, InstanceFieldsAsTuple.Options {
@@ -470,10 +483,6 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         @Override
         public List<String> getAdditionalBodyLinesForMethods(ExecutableElement element) {
             return emptyList();
-        }
-        @Override
-        public boolean makeFieldsPublic() {
-            return false;
         }
         @Override
         public boolean generateMemberInitializerForMethods() {

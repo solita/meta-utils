@@ -203,7 +203,6 @@ public class InstanceFieldsAsFunctions extends Generator<InstanceFieldsAsFunctio
             
             String initParams = "(" + enclosingElementQualifiedNameImported + ".class, \"" + fieldName + "\")";
                         
-            @SuppressWarnings("unchecked")
             Iterable<String> res = concat(
                 needsToBeFunction
                     ? newList(enclosingElementQualifiedNameImported.equals(enclosingElementGenericQualifiedNameImported) ? "" : "@SuppressWarnings(\"rawtypes\")",

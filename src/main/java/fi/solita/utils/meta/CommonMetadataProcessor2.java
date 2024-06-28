@@ -14,6 +14,7 @@ import javax.lang.model.SourceVersion;
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.excludesRegex,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.onlyPublicMembers,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.includePrivateMembers,
+                   "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.makeFieldsPublic,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.includesAnnotation,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.excludesAnnotation,
                    "CommonMetadataProcessor2." + CommonMetadataProcessor.Options.methodsAsFunctionsEnabled,

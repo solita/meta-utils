@@ -218,7 +218,6 @@ public class MethodsAsFunctions extends Generator<MethodsAsFunctions.Options> {
                     isPrivate && (method.getReturnType().getKind() == TypeKind.TYPEVAR || hasNonQmarkGenerics(returnType)) ? Some("\"unchecked\"") : None,
                     hasRawTypes ? Some("\"rawtypes\"") : None);
                         
-                @SuppressWarnings("unchecked")
                 Iterable<String> res = concat(
                     isEmpty(warnings)
                         ? None
