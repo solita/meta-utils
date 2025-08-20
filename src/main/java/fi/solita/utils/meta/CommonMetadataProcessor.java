@@ -424,6 +424,8 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
                 case 40: return MetaMethods.M40.class;
                 case 41: return MetaMethods.M41.class;
                 case 42: return MetaMethods.M42.class;
+                case 43: return MetaMethods.M43.class;
+                case 44: return MetaMethods.M44.class;
             }
             throw new RuntimeException("Not implemented: F" + argCount);
         }
