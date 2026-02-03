@@ -5,7 +5,6 @@ import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"CommonMetadataProcessor3." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor3." + CommonMetadataProcessor.Options.generatedClassNamePattern,

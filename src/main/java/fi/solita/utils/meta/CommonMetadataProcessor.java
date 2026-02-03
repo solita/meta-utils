@@ -63,7 +63,6 @@ import fi.solita.utils.meta.generators.InstanceFieldsAsFunctions;
 import fi.solita.utils.meta.generators.InstanceFieldsAsTuple;
 import fi.solita.utils.meta.generators.MethodsAsFunctions;
 
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
 @SupportedAnnotationTypes("*")
 @SupportedOptions({"CommonMetadataProcessor." + CommonMetadataProcessor.Options.enabled,
                    "CommonMetadataProcessor." + CommonMetadataProcessor.Options.generatedClassNamePattern,
@@ -100,6 +99,11 @@ public class CommonMetadataProcessor<OPTIONS extends CommonMetadataProcessor.Com
         public static final String instanceFieldsAsEnumEnabled = "instanceFieldsAsEnumEnabled";
         public static final String instanceFieldsAsFunctionsEnabled = "instanceFieldsAsFunctionsEnabled";
         public static final String instanceFieldsAsTupleEnabled = "instanceFieldsAsTupleEnabled";
+    }
+    
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latestSupported();
     }
     
     public Map<String, String> options()      { return processingEnv.getOptions(); }
